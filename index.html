@@ -88,6 +88,7 @@
         .gallery-item {
             cursor: pointer;
             overflow: hidden;
+            position: relative;
         }
         
         .gallery-item img {
@@ -97,6 +98,36 @@
         .gallery-item:hover img {
             transform: scale(1.1);
         }
+        
+        .like-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 10;
+            background: white;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .like-btn:hover {
+            transform: scale(1.1);
+        }
+        
+        .like-btn.liked {
+            background: #ec4899;
+            color: white;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
     </style>
 </head>
 <body class="gradient-bg text-gray-900 overflow-x-hidden">
@@ -105,16 +136,27 @@
     <nav class="fixed w-full z-50 glass-effect">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
-                <div class="text-2xl font-black gradient-text">PixelArt</div>
+                <div class="text-2xl font-black gradient-text cursor-pointer" onclick="location.href='#hero'">PixelArt</div>
                 <div class="hidden md:flex space-x-8">
                     <a href="#hero" class="text-gray-700 hover:text-pink-500 transition font-medium">홈</a>
                     <a href="#gallery" class="text-gray-700 hover:text-pink-500 transition font-medium">갤러리</a>
                     <a href="#pricing" class="text-gray-700 hover:text-pink-500 transition font-medium">가격</a>
                     <a href="#contact" class="text-gray-700 hover:text-pink-500 transition font-medium">연락</a>
                 </div>
-                <button class="bg-gradient-to-r from-pink-500 to-orange-500 text-white px-6 py-2 rounded-full hover:shadow-xl transition font-bold">
-                    시작하기
-                </button>
+                <div id="authButtons">
+                    <button onclick="openLoginModal()" class="bg-gradient-to-r from-pink-500 to-orange-500 text-white px-6 py-2 rounded-full hover:shadow-xl transition font-bold">
+                        로그인
+                    </button>
+                </div>
+                <div id="userMenu" class="hidden flex items-center gap-4">
+                    <button onclick="location.href='#mypage'" class="text-gray-700 hover:text-pink-500 transition font-medium">
+                        마이페이지
+                    </button>
+                    <span id="userNameDisplay" class="font-bold text-pink-500"></span>
+                    <button onclick="logout()" class="bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-full transition font-medium">
+                        로그아웃
+                    </button>
+                </div>
             </div>
         </div>
     </nav>
@@ -139,8 +181,8 @@
                 <a href="#gallery" class="bg-gradient-to-r from-pink-500 to-orange-500 text-white px-10 py-5 rounded-full text-xl font-bold hover:shadow-2xl transform hover:scale-105 transition">
                     갤러리 둘러보기
                 </a>
-                <button class="bg-white px-10 py-5 rounded-full text-xl font-bold hover:shadow-xl transition border-2 border-gray-200">
-                    무료 체험하기
+                <button onclick="openSignupModal()" class="bg-white px-10 py-5 rounded-full text-xl font-bold hover:shadow-xl transition border-2 border-gray-200">
+                    무료 회원가입
                 </button>
             </div>
         </div>
@@ -180,6 +222,47 @@
         </div>
     </section>
 
+    <!-- My Page Section -->
+    <section id="mypage" class="py-32 px-4 hidden">
+        <div class="max-w-7xl mx-auto">
+            <h2 class="text-6xl font-black text-center mb-6">마이페이지</h2>
+            <p class="text-center text-gray-600 text-xl mb-16">내 계정 정보 및 활동</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+                <div class="bg-white rounded-3xl p-8 shadow-lg">
+                    <h3 class="text-2xl font-black mb-4 text-gray-900">계정 정보</h3>
+                    <div class="space-y-3">
+                        <p><span class="text-gray-600">이름:</span> <span id="mypageName" class="font-bold"></span></p>
+                        <p><span class="text-gray-600">이메일:</span> <span id="mypageEmail" class="font-bold"></span></p>
+                        <p><span class="text-gray-600">플랜:</span> <span id="mypagePlan" class="font-bold text-pink-500">무료</span></p>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-3xl p-8 shadow-lg">
+                    <h3 class="text-2xl font-black mb-4 text-gray-900">다운로드 통계</h3>
+                    <div class="space-y-3">
+                        <p><span class="text-gray-600">총 다운로드:</span> <span id="totalDownloads" class="font-bold">0</span></p>
+                        <p><span class="text-gray-600">이번 달:</span> <span class="font-bold">0/10</span></p>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-3xl p-8 shadow-lg">
+                    <h3 class="text-2xl font-black mb-4 text-gray-900">찜한 항목</h3>
+                    <div class="space-y-3">
+                        <p><span class="text-gray-600">찜한 이미지:</span> <span id="likedCount" class="font-bold">0</span></p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-3xl p-8 shadow-lg">
+                <h3 class="text-3xl font-black mb-6 text-gray-900">찜한 이미지</h3>
+                <div id="likedImages" class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <!-- Liked images will be shown here -->
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- Image Modal -->
     <div id="imageModal" class="modal">
         <div class="relative max-w-6xl mx-auto p-4">
@@ -189,9 +272,63 @@
                 <h3 id="modalTitle" class="text-3xl font-black text-white mb-4"></h3>
                 <p id="modalCategory" class="text-xl text-gray-300 mb-6"></p>
                 <button id="downloadBtn" class="bg-gradient-to-r from-pink-500 to-orange-500 text-white px-10 py-4 rounded-full text-lg font-bold hover:shadow-2xl transition">
-                    다운로드 (프로 플랜 필요)
+                    다운로드
                 </button>
             </div>
+        </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal">
+        <div class="bg-white rounded-3xl p-10 max-w-md w-full mx-4 relative">
+            <button onclick="closeLoginModal()" class="absolute top-6 right-6 text-gray-400 hover:text-gray-600 text-3xl">&times;</button>
+            <h2 class="text-4xl font-black mb-8 text-center gradient-text">로그인</h2>
+            <form id="loginForm" class="space-y-6">
+                <div>
+                    <label class="block text-sm font-bold mb-2">이메일</label>
+                    <input type="email" id="loginEmail" required class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-pink-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold mb-2">비밀번호</label>
+                    <input type="password" id="loginPassword" required class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-pink-500 focus:outline-none">
+                </div>
+                <button type="submit" class="w-full bg-gradient-to-r from-pink-500 to-orange-500 text-white py-4 rounded-xl font-bold text-lg hover:shadow-xl transition">
+                    로그인
+                </button>
+            </form>
+            <p class="text-center mt-6 text-gray-600">
+                계정이 없으신가요? 
+                <button onclick="switchToSignup()" class="text-pink-500 font-bold hover:underline">회원가입</button>
+            </p>
+        </div>
+    </div>
+
+    <!-- Signup Modal -->
+    <div id="signupModal" class="modal">
+        <div class="bg-white rounded-3xl p-10 max-w-md w-full mx-4 relative">
+            <button onclick="closeSignupModal()" class="absolute top-6 right-6 text-gray-400 hover:text-gray-600 text-3xl">&times;</button>
+            <h2 class="text-4xl font-black mb-8 text-center gradient-text">회원가입</h2>
+            <form id="signupForm" class="space-y-6">
+                <div>
+                    <label class="block text-sm font-bold mb-2">이름</label>
+                    <input type="text" id="signupName" required class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-pink-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold mb-2">이메일</label>
+                    <input type="email" id="signupEmail" required class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-pink-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold mb-2">비밀번호</label>
+                    <input type="password" id="signupPassword" required class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-pink-500 focus:outline-none">
+                </div>
+                <button type="submit" class="w-full bg-gradient-to-r from-pink-500 to-orange-500 text-white py-4 rounded-xl font-bold text-lg hover:shadow-xl transition">
+                    가입하기
+                </button>
+            </form>
+            <p class="text-center mt-6 text-gray-600">
+                이미 계정이 있으신가요? 
+                <button onclick="switchToLogin()" class="text-pink-500 font-bold hover:underline">로그인</button>
+            </p>
         </div>
     </div>
 
@@ -255,7 +392,7 @@
         <div class="max-w-5xl mx-auto text-center bg-gradient-to-br from-pink-500 to-orange-500 rounded-3xl p-16 scroll-reveal shadow-2xl">
             <h2 class="text-5xl md:text-6xl font-black mb-8 text-white">오늘부터 시작하세요</h2>
             <p class="text-2xl text-white mb-12 opacity-95">7일 무료 체험으로 모든 프리미엄 기능을 경험해보세요</p>
-            <button class="bg-white text-pink-500 px-16 py-5 rounded-full text-xl font-black hover:shadow-2xl transform hover:scale-105 transition">
+            <button onclick="openSignupModal()" class="bg-white text-pink-500 px-16 py-5 rounded-full text-xl font-black hover:shadow-2xl transform hover:scale-105 transition">
                 무료로 시작하기 →
             </button>
         </div>
@@ -304,33 +441,12 @@
     </footer>
 
     <script>
-        // Sample gallery data (샘플 데이터 - 나중에 실제 이미지로 교체 가능)
+        // Sample gallery data
         const galleryData = [
             {
                 id: 1,
                 title: '추상 그라디언트 01',
                 category: 'wallpaper',
-                image: 'https://images.unsplash.com/photo-1557672172-298e090bd0f1?w=800',
-                resolution: '4K'
-            },
-            {
-                id: 2,
-                title: '자연 풍경 파노라마',
-                category: 'photo',
-                image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800',
-                resolution: '4K'
-            },
-            {
-                id: 3,
-                title: '미니멀 일러스트',
-                category: 'illustration',
-                image: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800',
-                resolution: '4K'
-            },
-            {
-                id: 4,
-                title: '도시 야경',
-                category: 'photo',
                 image: 'https://images.unsplash.com/photo-1514565131-fce0801e5785?w=800',
                 resolution: '4K'
             },
@@ -394,19 +510,203 @@
 
         let currentFilter = 'all';
         let searchQuery = '';
+        let currentUser = null;
+        let likedImages = [];
+
+        // Initialize
+        function init() {
+            loadUserData();
+            updateUI();
+            renderGallery();
+        }
+
+        // User Management
+        function loadUserData() {
+            const userData = localStorage.getItem('currentUser');
+            if (userData) {
+                currentUser = JSON.parse(userData);
+                const likes = localStorage.getItem('likedImages_' + currentUser.email);
+                likedImages = likes ? JSON.parse(likes) : [];
+            }
+        }
+
+        function saveUserData() {
+            if (currentUser) {
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                localStorage.setItem('likedImages_' + currentUser.email, JSON.stringify(likedImages));
+            }
+        }
+
+        function updateUI() {
+            const authButtons = document.getElementById('authButtons');
+            const userMenu = document.getElementById('userMenu');
+            const mypageSection = document.getElementById('mypage');
+            
+            if (currentUser) {
+                authButtons.classList.add('hidden');
+                userMenu.classList.remove('hidden');
+                document.getElementById('userNameDisplay').textContent = currentUser.name + '님';
+                document.getElementById('mypageName').textContent = currentUser.name;
+                document.getElementById('mypageEmail').textContent = currentUser.email;
+                document.getElementById('likedCount').textContent = likedImages.length;
+                updateLikedImagesDisplay();
+            } else {
+                authButtons.classList.remove('hidden');
+                userMenu.classList.add('hidden');
+                mypageSection.classList.add('hidden');
+            }
+        }
+
+        function updateLikedImagesDisplay() {
+            const container = document.getElementById('likedImages');
+            if (likedImages.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 col-span-4 text-center py-8">아직 찜한 이미지가 없습니다</p>';
+                return;
+            }
+            
+            container.innerHTML = likedImages.map(function(id) {
+                const item = galleryData.find(function(i) { return i.id === id; });
+                if (!item) return '';
+                return '<div class="gallery-item bg-white rounded-2xl overflow-hidden shadow-lg hover-scale cursor-pointer" onclick="openModal(' + item.id + ')">' +
+                    '<img src="' + item.image + '" alt="' + item.title + '" class="w-full h-48 object-cover">' +
+                    '<div class="p-4">' +
+                        '<h3 class="font-bold text-sm mb-1">' + item.title + '</h3>' +
+                    '</div>' +
+                '</div>';
+            }).join('');
+        }
+
+        // Auth Modals
+        function openLoginModal() {
+            document.getElementById('loginModal').classList.add('active');
+        }
+
+        function closeLoginModal() {
+            document.getElementById('loginModal').classList.remove('active');
+        }
+
+        function openSignupModal() {
+            document.getElementById('signupModal').classList.add('active');
+        }
+
+        function closeSignupModal() {
+            document.getElementById('signupModal').classList.remove('active');
+        }
+
+        function switchToSignup() {
+            closeLoginModal();
+            openSignupModal();
+        }
+
+        function switchToLogin() {
+            closeSignupModal();
+            openLoginModal();
+        }
+
+        // Login
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            const user = users.find(function(u) { return u.email === email && u.password === password; });
+            
+            if (user) {
+                currentUser = user;
+                saveUserData();
+                updateUI();
+                closeLoginModal();
+                alert('로그인 성공! 환영합니다, ' + user.name + '님!');
+                renderGallery();
+            } else {
+                alert('이메일 또는 비밀번호가 올바르지 않습니다.');
+            }
+        });
+
+        // Signup
+        document.getElementById('signupForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const name = document.getElementById('signupName').value;
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+            
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            
+            if (users.find(function(u) { return u.email === email; })) {
+                alert('이미 등록된 이메일입니다.');
+                return;
+            }
+            
+            const newUser = { name: name, email: email, password: password };
+            users.push(newUser);
+            localStorage.setItem('users', JSON.stringify(users));
+            
+            currentUser = newUser;
+            saveUserData();
+            updateUI();
+            closeSignupModal();
+            alert('회원가입 완료! 환영합니다, ' + name + '님!');
+            renderGallery();
+        });
+
+        // Logout
+        function logout() {
+            if (confirm('로그아웃 하시겠습니까?')) {
+                currentUser = null;
+                localStorage.removeItem('currentUser');
+                updateUI();
+                location.href = '#hero';
+                renderGallery();
+            }
+        }
+
+        // Like functionality
+        function toggleLike(imageId, event) {
+            if (event) {
+                event.stopPropagation();
+            }
+            
+            if (!currentUser) {
+                alert('로그인이 필요합니다!');
+                openLoginModal();
+                return;
+            }
+            
+            const index = likedImages.indexOf(imageId);
+            if (index > -1) {
+                likedImages.splice(index, 1);
+            } else {
+                likedImages.push(imageId);
+            }
+            
+            saveUserData();
+            renderGallery();
+            updateUI();
+        }
+
+        function isLiked(imageId) {
+            return likedImages.indexOf(imageId) > -1;
+        }
 
         // Render gallery
         function renderGallery() {
             const grid = document.getElementById('galleryGrid');
             const filtered = galleryData.filter(function(item) {
                 const matchesFilter = currentFilter === 'all' || item.category === currentFilter;
-                const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase());
+                const matchesSearch = item.title.toLowerCase().indexOf(searchQuery.toLowerCase()) > -1;
                 return matchesFilter && matchesSearch;
             });
 
             grid.innerHTML = filtered.map(function(item) {
+                const liked = isLiked(item.id);
                 return '<div class="gallery-item bg-white rounded-2xl overflow-hidden shadow-lg hover-scale" data-id="' + item.id + '">' +
-                    '<img src="' + item.image + '" alt="' + item.title + '" class="w-full h-64 object-cover">' +
+                    '<div class="relative">' +
+                        '<img src="' + item.image + '" alt="' + item.title + '" class="w-full h-64 object-cover">' +
+                        '<div class="like-btn ' + (liked ? 'liked' : '') + '" onclick="toggleLike(' + item.id + ', event)">' +
+                            (liked ? '❤️' : '🤍') +
+                        '</div>' +
+                    '</div>' +
                     '<div class="p-5">' +
                         '<h3 class="font-bold text-lg mb-2">' + item.title + '</h3>' +
                         '<div class="flex justify-between items-center">' +
@@ -419,14 +719,16 @@
 
             // Add click handlers
             document.querySelectorAll('.gallery-item').forEach(function(item) {
-                item.addEventListener('click', function() {
-                    const id = parseInt(this.getAttribute('data-id'));
-                    openModal(id);
+                item.addEventListener('click', function(e) {
+                    if (!e.target.closest('.like-btn')) {
+                        const id = parseInt(this.getAttribute('data-id'));
+                        openModal(id);
+                    }
                 });
             });
         }
 
-        // Get category name in Korean
+        // Get category name
         function getCategoryName(category) {
             const names = {
                 'wallpaper': '배경화면',
@@ -479,11 +781,14 @@
         });
 
         document.getElementById('downloadBtn').addEventListener('click', function() {
-            alert('프로 플랜에 가입하시면 다운로드가 가능합니다!\n\n2단계에서 회원가입/결제 기능을 추가할 예정입니다.');
+            if (!currentUser) {
+                alert('다운로드하려면 로그인이 필요합니다!');
+                document.getElementById('imageModal').classList.remove('active');
+                openLoginModal();
+                return;
+            }
+            alert('프로 플랜에 가입하시면 다운로드가 가능합니다!\n\n3단계에서 결제 기능을 추가할 예정입니다.');
         });
-
-        // Initialize
-        renderGallery();
 
         // Scroll reveal animation
         const observerOptions = {
@@ -526,3 +831,47 @@
                     target.scrollIntoView({
                         behavior: 'smooth',
                         block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Hash change handler for mypage
+        window.addEventListener('hashchange', function() {
+            const mypageSection = document.getElementById('mypage');
+            if (window.location.hash === '#mypage') {
+                if (currentUser) {
+                    mypageSection.classList.remove('hidden');
+                } else {
+                    alert('마이페이지는 로그인 후 이용 가능합니다!');
+                    openLoginModal();
+                    window.location.hash = '#hero';
+                }
+            } else {
+                mypageSection.classList.add('hidden');
+            }
+        });
+
+        // Initialize app
+        init()557672172-298e090bd0f1?w=800',
+                resolution: '4K'
+            },
+            {
+                id: 2,
+                title: '자연 풍경 파노라마',
+                category: 'photo',
+                image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800',
+                resolution: '4K'
+            },
+            {
+                id: 3,
+                title: '미니멀 일러스트',
+                category: 'illustration',
+                image: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800',
+                resolution: '4K'
+            },
+            {
+                id: 4,
+                title: '도시 야경',
+                category: 'photo',
+                image: 'https://images.unsplash.com/photo-1
