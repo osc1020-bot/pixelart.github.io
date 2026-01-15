@@ -2,145 +2,158 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PixelArt - 클라우드 연동 버전</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PixelArt - 승철님 서버 연동 완료</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+    
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // 🔥 본인의 Firebase 설정값을 여기에 붙여넣으세요!
+        // 🔥 이미지(image_608da4.png)에서 확인된 승철님의 실제 설정값입니다
         const firebaseConfig = {
-          apiKey: "AIzaSyBlpa0dgKKd7rL1gF9ChjBYOAH-zKA340g",
-          authDomain: "mypixelart-56508.firebaseapp.com",
-          projectId: "mypixelart-56508",
-          storageBucket: "mypixelart-56508.firebasestorage.app",
-          messagingSenderId: "237654735317",
-          appId: "1:237654735317:web:3186c72a53b8f24f77255c",
-          measurementId: "G-5N47DRWVJG"
+            apiKey: "AIzaSyBlpa0dgKKd7rL1gF9ChjBYOAH-zKA340g",
+            authDomain: "mypixelart-56508.firebaseapp.com",
+            projectId: "mypixelart-56508",
+            storageBucket: "mypixelart-56508.firebasestorage.app",
+            messagingSenderId: "237654735317",
+            appId: "1:237654735317:web:3186c72a53b8f24f77255c",
+            measurementId: "G-5N47DRWVJG"
         };
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // 전역 변수 설정
-        window.auth = auth;
-        window.db = db;
-        window.createUserWithEmailAndPassword = createUserWithEmailAndPassword;
-        window.signInWithEmailAndPassword = signInWithEmailAndPassword;
-        window.signOut = signOut;
-        window.setDoc = setDoc;
-        window.getDoc = getDoc;
-        window.doc = doc;
-        window.updateDoc = updateDoc;
+        // 전역에서 쓸 수 있게 함수 등록
+        window.fbAuth = auth;
+        window.fbDb = db;
+        window.methods = { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, doc, setDoc, getDoc, updateDoc, onAuthStateChanged };
     </script>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+
     <style>
-        /* (기존 CSS 스타일 유지) */
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Noto Sans KR', sans-serif; }
-        .gradient-text { background: linear-gradient(135deg, #ec4899 0%, #f97316 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-        .glass-effect { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(0, 0, 0, 0.05); }
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 9999; align-items: center; justify-content: center; padding: 15px; }
+        * { font-family: 'Noto Sans KR', sans-serif; }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center; }
         .modal.active { display: flex; }
-        #toast { visibility: hidden; min-width: 250px; background: #333; color: #fff; text-align: center; border-radius: 50px; padding: 16px; position: fixed; z-index: 10000; left: 50%; bottom: 30px; transform: translateX(-50%); }
-        #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
-        @keyframes fadein { from { bottom: 0; opacity: 0; } to { bottom: 30px; opacity: 1; } }
-        @keyframes fadeout { from { bottom: 30px; opacity: 1; } to { bottom: 0; opacity: 0; } }
+        #toast { visibility: hidden; position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #333; color: #fff; padding: 12px 24px; border-radius: 50px; z-index: 2000; }
+        #toast.show { visibility: visible; animation: fade 0.5s; }
+        @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
-<body class="bg-slate-50 text-gray-900">
-    <div id="toast">메시지 내용</div>
-    
-    <nav class="fixed w-full z-[100] glass-effect h-16 flex items-center px-4">
-        <div class="max-w-7xl mx-auto w-full flex justify-between items-center">
-            <div class="text-xl font-black gradient-text cursor-pointer" onclick="location.reload()">PixelArt</div>
-            <div id="authButtons" class="flex gap-2">
-                <button onclick="openLoginModal()" class="text-sm font-bold px-3">로그인</button>
-                <button onclick="openSignupModal()" class="bg-pink-500 text-white px-4 py-2 rounded-full text-sm font-bold">회원가입</button>
-            </div>
-            <div id="userMenu" class="hidden flex items-center gap-4">
-                <div class="relative cursor-pointer" onclick="showMyPage()">🛒 <span id="cartCount" class="bg-pink-500 text-white text-[10px] rounded-full px-1">0</span></div>
-                <button onclick="showMyPage()" class="text-sm font-bold">마이페이지</button>
-                <button onclick="handleLogout()" class="text-[10px] text-gray-400">로그아웃</button>
+<body class="bg-gray-50">
+
+    <div id="toast">메시지</div>
+
+    <nav class="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b">
+        <div class="max-w-6xl mx-auto px-4 h-16 flex justify-between items-center">
+            <h1 class="text-2xl font-black text-pink-500 cursor-pointer" onclick="location.reload()">PixelArt</h1>
+            <div id="nav-btns" class="flex gap-4 items-center">
+                <button onclick="toggleModal('loginModal')" class="font-bold text-sm">로그인</button>
+                <button onclick="toggleModal('signupModal')" class="bg-pink-500 text-white px-4 py-2 rounded-full font-bold text-sm">가입</button>
             </div>
         </div>
     </nav>
 
-    <section id="hero-section" class="pt-32 pb-10 text-center px-6">
-        <h1 class="text-4xl font-black mb-4">클라우드로 연동되는<br><span class="gradient-text">PixelArt</span></h1>
-        <p class="text-gray-500 mb-8">어떤 기기에서도 당신의 찜 목록을 확인하세요.</p>
-    </section>
+    <main class="max-w-6xl mx-auto p-4 pt-10">
+        <h2 class="text-3xl font-black mb-8">오늘의 아트 컬렉션</h2>
+        <div id="gallery" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            </div>
+    </main>
 
-    <div id="galleryGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-4 max-w-7xl mx-auto"></div>
+    <div id="signupModal" class="modal" onclick="if(event.target==this) toggleModal('signupModal')">
+        <div class="bg-white p-8 rounded-3xl w-full max-w-sm">
+            <h2 class="text-2xl font-bold mb-6">회원가입</h2>
+            <input type="text" id="s-name" placeholder="이름" class="w-full border p-3 rounded-xl mb-3">
+            <input type="email" id="s-email" placeholder="이메일" class="w-full border p-3 rounded-xl mb-3">
+            <input type="password" id="s-pw" placeholder="비밀번호 (6자 이상)" class="w-full border p-3 rounded-xl mb-6">
+            <button onclick="handleJoin()" class="w-full bg-pink-500 text-white py-4 rounded-xl font-bold">서버에 가입하기</button>
+        </div>
+    </div>
+
+    <div id="loginModal" class="modal" onclick="if(event.target==this) toggleModal('loginModal')">
+        <div class="bg-white p-8 rounded-3xl w-full max-w-sm">
+            <h2 class="text-2xl font-bold mb-6">로그인</h2>
+            <input type="email" id="l-email" placeholder="이메일" class="w-full border p-3 rounded-xl mb-3">
+            <input type="password" id="l-pw" placeholder="비밀번호" class="w-full border p-3 rounded-xl mb-6">
+            <button onclick="handleLogin()" class="w-full bg-black text-white py-4 rounded-xl font-bold">시작하기</button>
+        </div>
+    </div>
 
     <script type="module">
-        // --- Firebase 연동 로직 ---
-        const galleryData = [
-            { id: 1, title: '추상화의 물결', category: 'Abstract', image: 'https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=800' },
-            { id: 2, title: '보랏빛 우주', category: 'Space', image: 'https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?w=800' }
-            // ... 데이터 추가 가능
+        const data = [
+            { id: 1, title: '디지털 핑크', img: 'https://images.unsplash.com/photo-1550684848-fac1c5b4e853?w=500' },
+            { id: 2, title: '추상화의 밤', img: 'https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=500' },
+            { id: 3, title: '네온 시티', img: 'https://images.unsplash.com/photo-1519608487953-e999c86e7455?w=500' }
         ];
 
-        let userData = { likes: [], cart: [] };
+        // 1. 초기 실행 및 상태 감지
+        window.onload = () => {
+            render();
+            window.methods.onAuthStateChanged(window.fbAuth, (user) => {
+                if(user) {
+                    document.getElementById('nav-btns').innerHTML = `
+                        <span class="text-sm font-bold text-gray-500">${user.email}님</span>
+                        <button onclick="handleLogout()" class="text-xs text-red-500">로그아웃</button>
+                    `;
+                }
+            });
+        };
 
-        // 1. 로그인 상태 감지
-        window.auth.onAuthStateChanged(async (user) => {
-            if (user) {
-                const docRef = window.doc(window.db, "users", user.uid);
-                const docSnap = await window.getDoc(docRef);
-                if (docSnap.exists()) userData = docSnap.data();
-                
-                document.getElementById('authButtons').classList.add('hidden');
-                document.getElementById('userMenu').classList.remove('hidden');
-                updateUI();
-            } else {
-                document.getElementById('authButtons').classList.remove('hidden');
-                document.getElementById('userMenu').classList.add('hidden');
-            }
-            renderGallery();
-        });
+        function render() {
+            const gallery = document.getElementById('gallery');
+            gallery.innerHTML = data.map(i => `
+                <div class="bg-white rounded-3xl overflow-hidden shadow-md">
+                    <img src="${i.img}" class="w-full h-64 object-cover">
+                    <div class="p-6 flex justify-between items-center">
+                        <span class="font-bold text-lg">${i.title}</span>
+                        <button onclick="alert('찜하기는 가입 후 가능합니다!')" class="text-2xl">❤️</button>
+                    </div>
+                </div>
+            `).join('');
+        }
 
-        // 2. 회원가입
-        window.handleSignup = async () => {
-            const email = document.getElementById('signupEmail').value;
-            const password = document.getElementById('signupPassword').value;
-            const name = document.getElementById('signupName').value;
+        // 2. 가입 로직
+        window.handleJoin = async () => {
+            const email = document.getElementById('s-email').value;
+            const pw = document.getElementById('s-pw').value;
+            const name = document.getElementById('s-name').value;
+
             try {
-                const res = await window.createUserWithEmailAndPassword(window.auth, email, password);
-                await window.setDoc(window.doc(window.db, "users", res.user.uid), {
-                    name: name, email: email, likes: [], cart: []
+                const cred = await window.methods.createUserWithEmailAndPassword(window.fbAuth, email, pw);
+                await window.methods.setDoc(window.methods.doc(window.fbDb, "users", cred.user.uid), {
+                    name: name, email: email, joinedAt: new Date()
                 });
-                alert('가입 성공!');
-                location.reload();
-            } catch (e) { alert(e.message); }
+                toast("✅ 서버 가입 성공! 이제 로그인하세요.");
+                toggleModal('signupModal');
+            } catch (e) { toast("❌ 실패: " + e.message); }
         };
 
-        // 3. 로그인
+        // 3. 로그인 로직
         window.handleLogin = async () => {
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
+            const email = document.getElementById('l-email').value;
+            const pw = document.getElementById('l-pw').value;
             try {
-                await window.signInWithEmailAndPassword(window.auth, email, password);
-                location.reload();
-            } catch (e) { alert('로그인 실패'); }
+                await window.methods.signInWithEmailAndPassword(window.fbAuth, email, pw);
+                toast("👋 반갑습니다!");
+                toggleModal('loginModal');
+                setTimeout(() => location.reload(), 1000);
+            } catch (e) { toast("❌ 로그인 실패"); }
         };
 
-        // 4. 데이터 업데이트 (찜하기/장바구니)
-        window.toggleLike = async (id) => {
-            const user = window.auth.currentUser;
-            if (!user) return alert('로그인하세요');
-            
-            const idx = userData.likes.indexOf(id);
-            if (idx > -1) userData.likes.splice(idx, 1);
-            else userData.likes.push(id);
-            
-            await window.updateDoc(window.doc(window.db, "users", user.uid), { likes: userData.likes });
-            renderGallery();
+        window.handleLogout = () => {
+            window.methods.signOut(window.fbAuth);
+            location.reload();
         };
 
-        // (나머지 renderGallery, showToast 등은 2단계 함수와 동일하게 구현)
+        // UI 유틸리티
+        window.toggleModal = (id) => document.getElementById(id).classList.toggle('active');
+        function toast(m) {
+            const t = document.getElementById('toast');
+            t.innerText = m; t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 3000);
+        }
     </script>
 </body>
 </html>
