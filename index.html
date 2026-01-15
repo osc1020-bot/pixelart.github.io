@@ -67,6 +67,36 @@
         .gradient-bg {
             background: linear-gradient(135deg, #fef3f2 0%, #fff1f2 50%, #fce7f3 100%);
         }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .gallery-item {
+            cursor: pointer;
+            overflow: hidden;
+        }
+        
+        .gallery-item img {
+            transition: transform 0.3s ease;
+        }
+        
+        .gallery-item:hover img {
+            transform: scale(1.1);
+        }
     </style>
 </head>
 <body class="gradient-bg text-gray-900 overflow-x-hidden">
@@ -78,7 +108,7 @@
                 <div class="text-2xl font-black gradient-text">PixelArt</div>
                 <div class="hidden md:flex space-x-8">
                     <a href="#hero" class="text-gray-700 hover:text-pink-500 transition font-medium">홈</a>
-                    <a href="#collection" class="text-gray-700 hover:text-pink-500 transition font-medium">컬렉션</a>
+                    <a href="#gallery" class="text-gray-700 hover:text-pink-500 transition font-medium">갤러리</a>
                     <a href="#pricing" class="text-gray-700 hover:text-pink-500 transition font-medium">가격</a>
                     <a href="#contact" class="text-gray-700 hover:text-pink-500 transition font-medium">연락</a>
                 </div>
@@ -106,9 +136,9 @@
                 배경화면 • 일러스트 • 사진 - 모든 창작물이 한 곳에
             </p>
             <div class="flex flex-col sm:flex-row gap-4 justify-center scroll-reveal" style="transition-delay: 0.2s;">
-                <button class="bg-gradient-to-r from-pink-500 to-orange-500 text-white px-10 py-5 rounded-full text-xl font-bold hover:shadow-2xl transform hover:scale-105 transition">
-                    컬렉션 둘러보기
-                </button>
+                <a href="#gallery" class="bg-gradient-to-r from-pink-500 to-orange-500 text-white px-10 py-5 rounded-full text-xl font-bold hover:shadow-2xl transform hover:scale-105 transition">
+                    갤러리 둘러보기
+                </a>
                 <button class="bg-white px-10 py-5 rounded-full text-xl font-bold hover:shadow-xl transition border-2 border-gray-200">
                     무료 체험하기
                 </button>
@@ -116,82 +146,54 @@
         </div>
     </section>
 
-    <!-- Collection Section -->
-    <section id="collection" class="py-32 px-4">
+    <!-- Gallery Section -->
+    <section id="gallery" class="py-32 px-4 bg-white">
         <div class="max-w-7xl mx-auto">
-            <h2 class="text-6xl font-black text-center mb-6 scroll-reveal">프리미엄 컬렉션</h2>
-            <p class="text-center text-gray-600 text-xl mb-20 scroll-reveal">매주 업데이트되는 고품질 디지털 아트</p>
+            <h2 class="text-6xl font-black text-center mb-6 scroll-reveal">프리미엄 갤러리</h2>
+            <p class="text-center text-gray-600 text-xl mb-12 scroll-reveal">고품질 디지털 아트 컬렉션</p>
             
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
-                <div class="scroll-reveal hover-scale rounded-3xl overflow-hidden bg-white shadow-lg group cursor-pointer">
-                    <div class="h-96 bg-gradient-to-br from-pink-400 via-rose-400 to-red-500 relative">
-                        <div class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition flex items-center justify-center">
-                            <span class="text-4xl font-black text-white drop-shadow-lg">배경화면</span>
-                        </div>
-                    </div>
-                    <div class="p-8">
-                        <h3 class="text-3xl font-black mb-3 text-gray-900">Wallpapers</h3>
-                        <p class="text-gray-600 text-lg">4K 초고해상도 배경화면 200+</p>
-                    </div>
-                </div>
-                
-                <div class="scroll-reveal hover-scale rounded-3xl overflow-hidden bg-white shadow-lg group cursor-pointer" style="transition-delay: 0.1s;">
-                    <div class="h-96 bg-gradient-to-br from-orange-400 via-amber-400 to-yellow-500 relative">
-                        <div class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition flex items-center justify-center">
-                            <span class="text-4xl font-black text-white drop-shadow-lg">일러스트</span>
-                        </div>
-                    </div>
-                    <div class="p-8">
-                        <h3 class="text-3xl font-black mb-3 text-gray-900">Illustrations</h3>
-                        <p class="text-gray-600 text-lg">프리미엄 일러스트 작품 150+</p>
-                    </div>
-                </div>
-                
-                <div class="scroll-reveal hover-scale rounded-3xl overflow-hidden bg-white shadow-lg group cursor-pointer" style="transition-delay: 0.2s;">
-                    <div class="h-96 bg-gradient-to-br from-fuchsia-400 via-pink-400 to-rose-500 relative">
-                        <div class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition flex items-center justify-center">
-                            <span class="text-4xl font-black text-white drop-shadow-lg">사진</span>
-                        </div>
-                    </div>
-                    <div class="p-8">
-                        <h3 class="text-3xl font-black mb-3 text-gray-900">Photography</h3>
-                        <p class="text-gray-600 text-lg">전문 작가의 사진 컬렉션 300+</p>
-                    </div>
-                </div>
+            <!-- Filter Buttons -->
+            <div class="flex justify-center gap-4 mb-16 flex-wrap">
+                <button class="filter-btn active px-8 py-3 rounded-full font-bold transition bg-gradient-to-r from-pink-500 to-orange-500 text-white" data-filter="all">
+                    전체보기
+                </button>
+                <button class="filter-btn px-8 py-3 rounded-full font-bold transition bg-gray-100 text-gray-700 hover:bg-gray-200" data-filter="wallpaper">
+                    배경화면
+                </button>
+                <button class="filter-btn px-8 py-3 rounded-full font-bold transition bg-gray-100 text-gray-700 hover:bg-gray-200" data-filter="illustration">
+                    일러스트
+                </button>
+                <button class="filter-btn px-8 py-3 rounded-full font-bold transition bg-gray-100 text-gray-700 hover:bg-gray-200" data-filter="photo">
+                    사진
+                </button>
+            </div>
+
+            <!-- Search Bar -->
+            <div class="max-w-2xl mx-auto mb-16">
+                <input type="text" id="searchInput" placeholder="이미지 검색..." class="w-full px-6 py-4 rounded-full border-2 border-gray-200 focus:border-pink-500 focus:outline-none text-lg">
+            </div>
+            
+            <!-- Gallery Grid -->
+            <div id="galleryGrid" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                <!-- Gallery items will be inserted here by JavaScript -->
             </div>
         </div>
     </section>
 
-    <!-- Features Section -->
-    <section class="py-32 px-4 bg-white">
-        <div class="max-w-7xl mx-auto">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-16">
-                <div class="text-center scroll-reveal">
-                    <div class="w-24 h-24 bg-gradient-to-br from-pink-500 to-orange-500 rounded-3xl mx-auto mb-8 flex items-center justify-center text-5xl shadow-xl">
-                        🎨
-                    </div>
-                    <h3 class="text-3xl font-black mb-5 text-gray-900">4K 고화질</h3>
-                    <p class="text-gray-600 text-lg leading-relaxed">모든 디바이스에 완벽하게 최적화된 초고해상도 이미지를 제공합니다</p>
-                </div>
-                
-                <div class="text-center scroll-reveal" style="transition-delay: 0.1s;">
-                    <div class="w-24 h-24 bg-gradient-to-br from-orange-500 to-red-500 rounded-3xl mx-auto mb-8 flex items-center justify-center text-5xl shadow-xl">
-                        ⚡
-                    </div>
-                    <h3 class="text-3xl font-black mb-5 text-gray-900">즉시 다운로드</h3>
-                    <p class="text-gray-600 text-lg leading-relaxed">구매 즉시 원하는 모든 해상도로 바로 다운로드 가능합니다</p>
-                </div>
-                
-                <div class="text-center scroll-reveal" style="transition-delay: 0.2s;">
-                    <div class="w-24 h-24 bg-gradient-to-br from-rose-500 to-pink-500 rounded-3xl mx-auto mb-8 flex items-center justify-center text-5xl shadow-xl">
-                        ♾️
-                    </div>
-                    <h3 class="text-3xl font-black mb-5 text-gray-900">무제한 사용</h3>
-                    <p class="text-gray-600 text-lg leading-relaxed">개인 및 상업적 용도로 제한 없이 자유롭게 사용 가능합니다</p>
-                </div>
+    <!-- Image Modal -->
+    <div id="imageModal" class="modal">
+        <div class="relative max-w-6xl mx-auto p-4">
+            <button id="closeModal" class="absolute top-8 right-8 text-white text-4xl hover:text-pink-500 transition z-10">&times;</button>
+            <img id="modalImage" src="" alt="" class="max-w-full max-h-screen rounded-lg shadow-2xl">
+            <div class="mt-6 text-center">
+                <h3 id="modalTitle" class="text-3xl font-black text-white mb-4"></h3>
+                <p id="modalCategory" class="text-xl text-gray-300 mb-6"></p>
+                <button id="downloadBtn" class="bg-gradient-to-r from-pink-500 to-orange-500 text-white px-10 py-4 rounded-full text-lg font-bold hover:shadow-2xl transition">
+                    다운로드 (프로 플랜 필요)
+                </button>
             </div>
         </div>
-    </section>
+    </div>
 
     <!-- Pricing Section -->
     <section id="pricing" class="py-32 px-4">
@@ -270,10 +272,10 @@
                 <div>
                     <h4 class="font-black mb-6 text-gray-900 text-lg">제품</h4>
                     <ul class="space-y-3 text-gray-600">
-                        <li><a href="#" class="hover:text-pink-500 transition">배경화면</a></li>
-                        <li><a href="#" class="hover:text-pink-500 transition">일러스트</a></li>
-                        <li><a href="#" class="hover:text-pink-500 transition">사진</a></li>
-                        <li><a href="#" class="hover:text-pink-500 transition">라이선스</a></li>
+                        <li><a href="#gallery" class="hover:text-pink-500 transition">배경화면</a></li>
+                        <li><a href="#gallery" class="hover:text-pink-500 transition">일러스트</a></li>
+                        <li><a href="#gallery" class="hover:text-pink-500 transition">사진</a></li>
+                        <li><a href="#pricing" class="hover:text-pink-500 transition">라이선스</a></li>
                     </ul>
                 </div>
                 <div>
@@ -302,6 +304,187 @@
     </footer>
 
     <script>
+        // Sample gallery data (샘플 데이터 - 나중에 실제 이미지로 교체 가능)
+        const galleryData = [
+            {
+                id: 1,
+                title: '추상 그라디언트 01',
+                category: 'wallpaper',
+                image: 'https://images.unsplash.com/photo-1557672172-298e090bd0f1?w=800',
+                resolution: '4K'
+            },
+            {
+                id: 2,
+                title: '자연 풍경 파노라마',
+                category: 'photo',
+                image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800',
+                resolution: '4K'
+            },
+            {
+                id: 3,
+                title: '미니멀 일러스트',
+                category: 'illustration',
+                image: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800',
+                resolution: '4K'
+            },
+            {
+                id: 4,
+                title: '도시 야경',
+                category: 'photo',
+                image: 'https://images.unsplash.com/photo-1514565131-fce0801e5785?w=800',
+                resolution: '4K'
+            },
+            {
+                id: 5,
+                title: '컬러풀 추상',
+                category: 'wallpaper',
+                image: 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=800',
+                resolution: '4K'
+            },
+            {
+                id: 6,
+                title: '우주 갤럭시',
+                category: 'wallpaper',
+                image: 'https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=800',
+                resolution: '4K'
+            },
+            {
+                id: 7,
+                title: '일러스트 캐릭터',
+                category: 'illustration',
+                image: 'https://images.unsplash.com/photo-1561070791-2526d30994b5?w=800',
+                resolution: '4K'
+            },
+            {
+                id: 8,
+                title: '산 풍경',
+                category: 'photo',
+                image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800',
+                resolution: '4K'
+            },
+            {
+                id: 9,
+                title: '네온 그라디언트',
+                category: 'wallpaper',
+                image: 'https://images.unsplash.com/photo-1550859492-d5da9d8e45f3?w=800',
+                resolution: '4K'
+            },
+            {
+                id: 10,
+                title: '추상 패턴',
+                category: 'illustration',
+                image: 'https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=800',
+                resolution: '4K'
+            },
+            {
+                id: 11,
+                title: '바다 풍경',
+                category: 'photo',
+                image: 'https://images.unsplash.com/photo-1505142468610-359e7d316be0?w=800',
+                resolution: '4K'
+            },
+            {
+                id: 12,
+                title: '추상 아트',
+                category: 'wallpaper',
+                image: 'https://images.unsplash.com/photo-1558591710-4b4a1ae0f04d?w=800',
+                resolution: '4K'
+            }
+        ];
+
+        let currentFilter = 'all';
+        let searchQuery = '';
+
+        // Render gallery
+        function renderGallery() {
+            const grid = document.getElementById('galleryGrid');
+            const filtered = galleryData.filter(function(item) {
+                const matchesFilter = currentFilter === 'all' || item.category === currentFilter;
+                const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase());
+                return matchesFilter && matchesSearch;
+            });
+
+            grid.innerHTML = filtered.map(function(item) {
+                return '<div class="gallery-item bg-white rounded-2xl overflow-hidden shadow-lg hover-scale" data-id="' + item.id + '">' +
+                    '<img src="' + item.image + '" alt="' + item.title + '" class="w-full h-64 object-cover">' +
+                    '<div class="p-5">' +
+                        '<h3 class="font-bold text-lg mb-2">' + item.title + '</h3>' +
+                        '<div class="flex justify-between items-center">' +
+                            '<span class="text-sm text-gray-500">' + getCategoryName(item.category) + '</span>' +
+                            '<span class="bg-pink-100 text-pink-600 px-3 py-1 rounded-full text-xs font-bold">' + item.resolution + '</span>' +
+                        '</div>' +
+                    '</div>' +
+                '</div>';
+            }).join('');
+
+            // Add click handlers
+            document.querySelectorAll('.gallery-item').forEach(function(item) {
+                item.addEventListener('click', function() {
+                    const id = parseInt(this.getAttribute('data-id'));
+                    openModal(id);
+                });
+            });
+        }
+
+        // Get category name in Korean
+        function getCategoryName(category) {
+            const names = {
+                'wallpaper': '배경화면',
+                'illustration': '일러스트',
+                'photo': '사진'
+            };
+            return names[category] || category;
+        }
+
+        // Filter buttons
+        document.querySelectorAll('.filter-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.filter-btn').forEach(function(b) {
+                    b.classList.remove('active', 'bg-gradient-to-r', 'from-pink-500', 'to-orange-500', 'text-white');
+                    b.classList.add('bg-gray-100', 'text-gray-700');
+                });
+                this.classList.add('active', 'bg-gradient-to-r', 'from-pink-500', 'to-orange-500', 'text-white');
+                this.classList.remove('bg-gray-100', 'text-gray-700');
+                
+                currentFilter = this.getAttribute('data-filter');
+                renderGallery();
+            });
+        });
+
+        // Search
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            searchQuery = e.target.value;
+            renderGallery();
+        });
+
+        // Modal functions
+        function openModal(id) {
+            const item = galleryData.find(function(i) { return i.id === id; });
+            if (!item) return;
+
+            document.getElementById('modalImage').src = item.image;
+            document.getElementById('modalTitle').textContent = item.title;
+            document.getElementById('modalCategory').textContent = getCategoryName(item.category) + ' • ' + item.resolution;
+            document.getElementById('imageModal').classList.add('active');
+        }
+
+        document.getElementById('closeModal').addEventListener('click', function() {
+            document.getElementById('imageModal').classList.remove('active');
+        });
+
+        document.getElementById('imageModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.remove('active');
+            }
+        });
+
+        document.getElementById('downloadBtn').addEventListener('click', function() {
+            alert('프로 플랜에 가입하시면 다운로드가 가능합니다!\n\n2단계에서 회원가입/결제 기능을 추가할 예정입니다.');
+        });
+
+        // Initialize
+        renderGallery();
+
         // Scroll reveal animation
         const observerOptions = {
             threshold: 0.1,
@@ -320,7 +503,7 @@
             observer.observe(el);
         });
 
-        // Parallax effect on mouse move
+        // Parallax effect
         document.addEventListener('mousemove', function(e) {
             const shapes = document.querySelectorAll('.float-animation');
             const x = e.clientX / window.innerWidth;
@@ -343,13 +526,3 @@
                     target.scrollIntoView({
                         behavior: 'smooth',
                         block: 'start'
-                    });
-                }
-            });
-        });
-    </script>
-</body>
-</html>
-
-
-
