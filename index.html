@@ -11,7 +11,7 @@
         .gradient-text { background: linear-gradient(135deg, #ec4899 0%, #f97316 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
         .glass-effect { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid rgba(0, 0, 0, 0.05); }
         
-        /* 알림창(토스트) 애니메이션 */
+        /* 알림창(토스트) */
         #toast {
             visibility: hidden; min-width: 250px; background-color: #333; color: #fff; text-align: center;
             border-radius: 50px; padding: 16px; position: fixed; z-index: 10000; left: 50%; bottom: 30px;
@@ -21,9 +21,13 @@
         @keyframes fadein { from { bottom: 0; opacity: 0; } to { bottom: 30px; opacity: 1; } }
         @keyframes fadeout { from { bottom: 30px; opacity: 1; } to { bottom: 0; opacity: 0; } }
 
+        /* 모달 공통 */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); z-index: 9999; align-items: center; justify-content: center; padding: 15px; }
         .modal.active { display: flex; }
-        .like-btn { position: absolute; top: 15px; right: 15px; z-index: 10; background: white; border-radius: 50%; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border: none; font-size: 1.5rem; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        
+        /* 하트 버튼 */
+        .like-btn { position: absolute; top: 15px; right: 15px; z-index: 10; background: white; border-radius: 50%; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border: none; font-size: 1.5rem; box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: transform 0.2s; }
+        .like-btn:active { transform: scale(0.9); }
     </style>
 </head>
 <body class="bg-slate-50 text-gray-900">
@@ -38,7 +42,7 @@
                 <button onclick="openSignupModal()" class="bg-pink-500 text-white px-4 py-2 rounded-full text-sm font-bold">회원가입</button>
             </div>
             <div id="userMenu" class="hidden flex items-center gap-3">
-                <button onclick="showMyPage()" class="text-sm font-bold text-gray-700">마이페이지</button>
+                <button onclick="showMyPage()" class="text-sm font-bold text-gray-700 hover:text-pink-500">마이페이지</button>
                 <button onclick="logout()" class="text-[10px] bg-gray-100 px-2 py-1 rounded text-gray-400">로그아웃</button>
             </div>
         </div>
@@ -46,33 +50,54 @@
 
     <section id="hero-section" class="pt-32 pb-16 px-6 text-center">
         <h1 class="text-4xl font-black mb-4 leading-tight">디지털 아트<br><span class="gradient-text">새로운 기준</span></h1>
-        <p class="text-gray-500 mb-8">당신의 공간을 채울 아름다운 이미지를 만나보세요.</p>
-        <div id="heroButtons" class="flex flex-col gap-3">
-            <button onclick="openSignupModal()" id="heroSignupBtn" class="w-full bg-gradient-to-r from-pink-500 to-orange-500 text-white py-4 rounded-2xl font-bold text-lg">1초만에 회원가입</button>
+        <p class="text-gray-500 mb-8">이미지를 클릭하여 상세 정보를 확인해보세요.</p>
+        <div id="heroButtons" class="flex flex-col gap-3 max-w-xs mx-auto">
+            <button onclick="openSignupModal()" id="heroSignupBtn" class="bg-gradient-to-r from-pink-500 to-orange-500 text-white py-4 rounded-2xl font-bold text-lg shadow-lg">1초만에 회원가입</button>
         </div>
     </section>
 
     <section id="gallery" class="px-4 py-10 max-w-7xl mx-auto">
-        <h2 class="text-2xl font-black mb-8 px-2">최신 작품 둘러보기</h2>
-        <div id="galleryGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            </div>
+        <h2 class="text-2xl font-black mb-8 px-2">최신 작품 컬렉션</h2>
+        <div id="galleryGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
     </section>
 
     <section id="mypage" class="hidden px-4 py-24 max-w-4xl mx-auto">
-        <div class="bg-white rounded-3xl p-8 shadow-lg">
-            <h2 class="text-2xl font-black mb-6">마이페이지</h2>
-            <div class="mb-8 p-4 bg-slate-50 rounded-2xl">
-                <p id="mpName" class="font-bold text-lg"></p>
+        <div class="bg-white rounded-[2.5rem] p-8 shadow-lg">
+            <h2 class="text-3xl font-black mb-6">마이페이지</h2>
+            <div class="mb-8 p-6 bg-slate-50 rounded-2xl border border-gray-100">
+                <p id="mpName" class="font-black text-xl text-gray-800"></p>
                 <p id="mpEmail" class="text-gray-500"></p>
             </div>
-            <h3 class="font-bold mb-4">내 찜 목록 ❤️</h3>
-            <div id="likedList" class="grid grid-cols-2 sm:grid-cols-3 gap-3"></div>
-            <button onclick="location.reload()" class="w-full mt-10 py-4 bg-gray-900 text-white rounded-2xl font-bold">메인으로 가기</button>
+            <h3 class="font-bold mb-6 text-lg flex items-center gap-2">❤️ 내가 찜한 작품</h3>
+            <div id="likedList" class="grid grid-cols-2 sm:grid-cols-3 gap-4"></div>
+            <button onclick="location.reload()" class="w-full mt-10 py-4 bg-gray-900 text-white rounded-2xl font-bold">홈으로 돌아가기</button>
         </div>
     </section>
 
+    <div id="detailModal" class="modal" onclick="if(event.target==this) closeDetailModal()">
+        <div class="bg-white w-full max-w-2xl rounded-[2.5rem] overflow-hidden relative shadow-2xl mx-4 animate-modal">
+            <button onclick="closeDetailModal()" class="absolute top-5 right-5 z-20 bg-white/80 backdrop-blur rounded-full w-10 h-10 flex items-center justify-center font-bold shadow-lg">&times;</button>
+            <div class="flex flex-col md:flex-row">
+                <div class="md:w-1/2">
+                    <img id="detailImage" src="" class="w-full h-80 md:h-full object-cover">
+                </div>
+                <div class="md:w-1/2 p-8 flex flex-col justify-center">
+                    <p id="detailCategory" class="text-pink-500 font-bold text-xs mb-2 uppercase tracking-widest"></p>
+                    <h2 id="detailTitle" class="text-3xl font-black mb-4 leading-tight text-gray-800"></h2>
+                    <p class="text-gray-500 mb-8 text-sm leading-relaxed">
+                        이 작품은 PixelArt의 고해상도 프리미엄 컬렉션입니다. <br>상업적 이용이 가능한 라이선스를 포함하고 있습니다.
+                    </p>
+                    <div class="flex gap-3">
+                        <button onclick="handleBuy()" class="flex-1 bg-black text-white py-4 rounded-2xl font-bold hover:bg-gray-800 transition active:scale-95">구매하기</button>
+                        <button id="detailLikeBtn" class="w-14 h-14 border-2 border-gray-100 rounded-2xl flex items-center justify-center text-xl hover:bg-gray-50 transition"></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="loginModal" class="modal" onclick="if(event.target==this) closeLoginModal()">
-        <div class="bg-white w-full max-w-sm p-8 rounded-[2rem] relative">
+        <div class="bg-white w-full max-w-sm p-8 rounded-[2rem]">
             <h2 class="text-2xl font-black mb-6">로그인</h2>
             <input type="email" id="loginEmail" placeholder="이메일" class="w-full mb-4 p-4 bg-gray-50 rounded-xl outline-none border focus:border-pink-500">
             <input type="password" id="loginPassword" placeholder="비밀번호" class="w-full mb-6 p-4 bg-gray-50 rounded-xl outline-none border focus:border-pink-500">
@@ -81,27 +106,26 @@
     </div>
 
     <div id="signupModal" class="modal" onclick="if(event.target==this) closeSignupModal()">
-        <div class="bg-white w-full max-w-sm p-8 rounded-[2rem] relative">
+        <div class="bg-white w-full max-w-sm p-8 rounded-[2rem]">
             <h2 class="text-2xl font-black mb-6 text-pink-500">회원가입</h2>
             <input type="text" id="signupName" placeholder="성함" class="w-full mb-4 p-4 bg-gray-50 rounded-xl outline-none border focus:border-pink-500">
             <input type="email" id="signupEmail" placeholder="이메일 주소" class="w-full mb-4 p-4 bg-gray-50 rounded-xl outline-none border focus:border-pink-500">
             <input type="password" id="signupPassword" placeholder="비밀번호 설정" class="w-full mb-6 p-4 bg-gray-50 rounded-xl outline-none border focus:border-pink-500">
-            <button onclick="handleSignup()" class="w-full bg-pink-500 text-white py-4 rounded-xl font-bold">가입하고 찜하기</button>
+            <button onclick="handleSignup()" class="w-full bg-pink-500 text-white py-4 rounded-xl font-bold">가입 완료</button>
         </div>
     </div>
 
     <script>
-        // 1. 대량의 이미지 데이터 추가
         const galleryData = [
-            { id: 1, title: '추상화의 물결', image: 'https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=800' },
-            { id: 2, title: '보랏빛 우주', image: 'https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?w=800' },
-            { id: 3, title: '산맥의 고요', image: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800' },
-            { id: 4, title: '네온 시티', image: 'https://images.unsplash.com/photo-1519608487953-e999c86e7455?w=800' },
-            { id: 5, title: '숲속의 아침', image: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800' },
-            { id: 6, title: '바다의 윤슬', image: 'https://images.unsplash.com/photo-1505142468610-359e7d316be0?w=800' },
-            { id: 7, title: '사막의 밤', image: 'https://images.unsplash.com/photo-1473580044384-7ba9967e16a0?w=800' },
-            { id: 8, title: '눈 덮인 마을', image: 'https://images.unsplash.com/photo-1491002052546-bf38f186af56?w=800' },
-            { id: 9, title: '에메랄드 숲', image: 'https://images.unsplash.com/photo-1448375033059-5ac154ddc822?w=800' }
+            { id: 1, title: '추상화의 물결', category: 'Abstract', image: 'https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=800' },
+            { id: 2, title: '보랏빛 우주', category: 'Space', image: 'https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?w=800' },
+            { id: 3, title: '산맥의 고요', category: 'Nature', image: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800' },
+            { id: 4, title: '네온 시티', category: 'City', image: 'https://images.unsplash.com/photo-1519608487953-e999c86e7455?w=800' },
+            { id: 5, title: '숲속의 아침', category: 'Nature', image: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800' },
+            { id: 6, title: '바다의 윤슬', category: 'Sea', image: 'https://images.unsplash.com/photo-1505142468610-359e7d316be0?w=800' },
+            { id: 7, title: '사막의 밤', category: 'Nature', image: 'https://images.unsplash.com/photo-1473580044384-7ba9967e16a0?w=800' },
+            { id: 8, title: '눈 덮인 마을', category: 'Winter', image: 'https://images.unsplash.com/photo-1491002052546-bf38f186af56?w=800' },
+            { id: 9, title: '에메랄드 숲', category: 'Nature', image: 'https://images.unsplash.com/photo-1448375033059-5ac154ddc822?w=800' }
         ];
 
         let currentUser = JSON.parse(localStorage.getItem('currentUser'));
@@ -112,7 +136,6 @@
             renderGallery();
         }
 
-        // 2. 알림창(토스트) 표시 함수
         function showToast(message) {
             const toast = document.getElementById("toast");
             toast.innerText = message;
@@ -133,14 +156,14 @@
         function renderGallery() {
             const grid = document.getElementById('galleryGrid');
             grid.innerHTML = galleryData.map(item => `
-                <div class="relative bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all border border-gray-100">
-                    <button onclick="toggleLike(${item.id})" class="like-btn">
+                <div class="relative bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all border border-gray-100 cursor-pointer group" onclick="openDetailModal(${item.id})">
+                    <button onclick="event.stopPropagation(); toggleLike(${item.id})" class="like-btn">
                         ${likedItems.includes(item.id) ? '❤️' : '🤍'}
                     </button>
-                    <img src="${item.image}" class="w-full h-72 object-cover">
+                    <img src="${item.image}" class="w-full h-72 object-cover group-hover:scale-105 transition-transform duration-500">
                     <div class="p-6">
-                        <h3 class="font-bold text-lg">${item.title}</h3>
-                        <p class="text-xs text-gray-400 mt-1">Premium Digital Art</p>
+                        <p class="text-[10px] font-black text-pink-500 uppercase tracking-[0.2em] mb-1">${item.category}</p>
+                        <h3 class="font-bold text-lg text-gray-800">${item.title}</h3>
                     </div>
                 </div>
             `).join('');
@@ -162,6 +185,35 @@
             }
             localStorage.setItem('likes_' + currentUser.email, JSON.stringify(likedItems));
             renderGallery();
+            
+            // 상세 모달 안의 하트도 동기화
+            const detailLikeBtn = document.getElementById('detailLikeBtn');
+            if (detailLikeBtn) detailLikeBtn.innerHTML = likedItems.includes(id) ? '❤️' : '🤍';
+        }
+
+        function openDetailModal(id) {
+            const item = galleryData.find(i => i.id === id);
+            if(!item) return;
+
+            document.getElementById('detailImage').src = item.image;
+            document.getElementById('detailTitle').innerText = item.title;
+            document.getElementById('detailCategory').innerText = item.category;
+            
+            const likeBtn = document.getElementById('detailLikeBtn');
+            likeBtn.innerHTML = likedItems.includes(id) ? '❤️' : '🤍';
+            likeBtn.onclick = (e) => {
+                e.stopPropagation();
+                toggleLike(id);
+            };
+
+            document.getElementById('detailModal').classList.add('active');
+        }
+
+        function closeDetailModal() { document.getElementById('detailModal').classList.remove('active'); }
+
+        function handleBuy() {
+            if(!currentUser) { showToast('로그인 후 구매 가능합니다.'); openLoginModal(); return; }
+            showToast('💰 구매 기능은 현재 준비 중입니다!');
         }
 
         function showMyPage() {
@@ -171,9 +223,14 @@
             const likedList = document.getElementById('likedList');
             const likedData = galleryData.filter(i => likedItems.includes(i.id));
             if(likedData.length === 0) {
-                likedList.innerHTML = '<p class="col-span-full text-center text-gray-400 py-10">찜한 이미지가 없어요.</p>';
+                likedList.innerHTML = '<p class="col-span-full text-center text-gray-400 py-10">찜한 작품이 없습니다.</p>';
             } else {
-                likedList.innerHTML = likedData.map(i => `<img src="${i.image}" class="rounded-2xl h-32 w-full object-cover shadow-md">`).join('');
+                likedList.innerHTML = likedData.map(i => `
+                    <div class="bg-gray-50 rounded-2xl overflow-hidden p-2">
+                        <img src="${i.image}" class="rounded-xl h-32 w-full object-cover shadow-sm">
+                        <p class="text-[10px] font-bold mt-2 text-center text-gray-500">${i.title}</p>
+                    </div>
+                `).join('');
             }
             window.scrollTo(0, 0);
         }
@@ -187,14 +244,12 @@
             const name = document.getElementById('signupName').value;
             const email = document.getElementById('signupEmail').value;
             const password = document.getElementById('signupPassword').value;
-            if(!name || !email || !password) { showToast('정보를 모두 입력해주세요!'); return; }
-            
+            if(!name || !email || !password) { showToast('모든 정보를 입력해주세요.'); return; }
             const users = JSON.parse(localStorage.getItem('users') || '[]');
             users.push({name, email, password});
             localStorage.setItem('users', JSON.stringify(users));
-            showToast('가입 성공! 로그인을 해주세요.');
-            closeSignupModal();
-            setTimeout(openLoginModal, 500);
+            showToast('가입 성공! 로그인 하세요.');
+            closeSignupModal(); setTimeout(openLoginModal, 500);
         }
 
         function handleLogin() {
@@ -206,17 +261,10 @@
                 localStorage.setItem('currentUser', JSON.stringify(user));
                 showToast(user.name + '님 환영합니다!');
                 setTimeout(() => location.reload(), 1000);
-            } else {
-                showToast('이메일 또는 비밀번호가 틀렸습니다.');
-            }
+            } else { showToast('정보가 올바르지 않습니다.'); }
         }
 
-        function logout() { 
-            if(confirm('로그아웃 하시겠습니까?')) {
-                localStorage.removeItem('currentUser'); 
-                location.reload(); 
-            }
-        }
+        function logout() { if(confirm('로그아웃 하시겠습니까?')) { localStorage.removeItem('currentUser'); location.reload(); } }
         
         init();
     </script>
