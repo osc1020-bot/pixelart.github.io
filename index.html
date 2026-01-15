@@ -8,32 +8,34 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Noto Sans KR', sans-serif; }
-        .gradient-text { background: linear-gradient(135deg, #ec4899 0%, #f97316 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .gradient-text { background: linear-gradient(135deg, #ec4899 0%, #f97316 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
         .glass-effect { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid rgba(0, 0, 0, 0.05); }
         
-        /* 모달 반응형 수정 */
-        .modal { 
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: rgba(0, 0, 0, 0.85); z-index: 9999; align-items: center; justify-content: center; 
-            padding: 15px; 
+        /* 알림창(토스트) 애니메이션 */
+        #toast {
+            visibility: hidden; min-width: 250px; background-color: #333; color: #fff; text-align: center;
+            border-radius: 50px; padding: 16px; position: fixed; z-index: 10000; left: 50%; bottom: 30px;
+            transform: translateX(-50%); font-weight: bold; box-shadow: 0 10px 20px rgba(0,0,0,0.2);
         }
-        .modal.active { display: flex; }
-        .modal-content { 
-            background: white; width: 100%; max-width: 400px; padding: 30px; 
-            border-radius: 24px; position: relative; 
-        }
+        #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
+        @keyframes fadein { from { bottom: 0; opacity: 0; } to { bottom: 30px; opacity: 1; } }
+        @keyframes fadeout { from { bottom: 30px; opacity: 1; } to { bottom: 0; opacity: 0; } }
 
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); z-index: 9999; align-items: center; justify-content: center; padding: 15px; }
+        .modal.active { display: flex; }
         .like-btn { position: absolute; top: 15px; right: 15px; z-index: 10; background: white; border-radius: 50%; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border: none; font-size: 1.5rem; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
     </style>
 </head>
 <body class="bg-slate-50 text-gray-900">
+
+    <div id="toast">메시지 내용</div>
     
     <nav class="fixed w-full z-[100] glass-effect h-16 flex items-center">
         <div class="max-w-7xl mx-auto px-4 w-full flex justify-between items-center">
             <div class="text-xl font-black gradient-text cursor-pointer" onclick="location.reload()">PixelArt</div>
             <div id="authButtons" class="flex gap-2">
                 <button onclick="openLoginModal()" class="text-sm font-bold px-3 py-2">로그인</button>
-                <button onclick="openSignupModal()" class="bg-pink-500 text-white px-4 py-2 rounded-full text-sm font-bold shadow-md">회원가입</button>
+                <button onclick="openSignupModal()" class="bg-pink-500 text-white px-4 py-2 rounded-full text-sm font-bold">회원가입</button>
             </div>
             <div id="userMenu" class="hidden flex items-center gap-3">
                 <button onclick="showMyPage()" class="text-sm font-bold text-gray-700">마이페이지</button>
@@ -42,56 +44,64 @@
         </div>
     </nav>
 
-    <section class="pt-32 pb-16 px-6 text-center">
+    <section id="hero-section" class="pt-32 pb-16 px-6 text-center">
         <h1 class="text-4xl font-black mb-4 leading-tight">디지털 아트<br><span class="gradient-text">새로운 기준</span></h1>
-        <p class="text-gray-500 mb-8">지금 가입하고 작품을 찜해보세요!</p>
+        <p class="text-gray-500 mb-8">당신의 공간을 채울 아름다운 이미지를 만나보세요.</p>
         <div id="heroButtons" class="flex flex-col gap-3">
-            <button onclick="openSignupModal()" id="heroSignupBtn" class="w-full bg-gradient-to-r from-pink-500 to-orange-500 text-white py-4 rounded-2xl font-bold text-lg shadow-xl">1초만에 회원가입</button>
-            <button onclick="window.scrollTo(0, 600)" class="w-full bg-white border border-gray-200 py-4 rounded-2xl font-bold">갤러리 구경하기</button>
+            <button onclick="openSignupModal()" id="heroSignupBtn" class="w-full bg-gradient-to-r from-pink-500 to-orange-500 text-white py-4 rounded-2xl font-bold text-lg">1초만에 회원가입</button>
         </div>
     </section>
 
-    <section id="gallery" class="px-4 py-10">
-        <div id="galleryGrid" class="grid grid-cols-1 gap-6">
+    <section id="gallery" class="px-4 py-10 max-w-7xl mx-auto">
+        <h2 class="text-2xl font-black mb-8 px-2">최신 작품 둘러보기</h2>
+        <div id="galleryGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             </div>
     </section>
 
-    <section id="mypage" class="hidden px-4 py-24">
+    <section id="mypage" class="hidden px-4 py-24 max-w-4xl mx-auto">
         <div class="bg-white rounded-3xl p-8 shadow-lg">
             <h2 class="text-2xl font-black mb-6">마이페이지</h2>
-            <p id="mpName" class="font-bold text-lg"></p>
-            <p id="mpEmail" class="text-gray-500 mb-8"></p>
-            <h3 class="font-bold mb-4">내 찜 목록</h3>
-            <div id="likedList" class="grid grid-cols-2 gap-2"></div>
-            <button onclick="location.reload()" class="w-full mt-8 py-3 text-pink-500 font-bold">메인으로</button>
+            <div class="mb-8 p-4 bg-slate-50 rounded-2xl">
+                <p id="mpName" class="font-bold text-lg"></p>
+                <p id="mpEmail" class="text-gray-500"></p>
+            </div>
+            <h3 class="font-bold mb-4">내 찜 목록 ❤️</h3>
+            <div id="likedList" class="grid grid-cols-2 sm:grid-cols-3 gap-3"></div>
+            <button onclick="location.reload()" class="w-full mt-10 py-4 bg-gray-900 text-white rounded-2xl font-bold">메인으로 가기</button>
         </div>
     </section>
 
     <div id="loginModal" class="modal" onclick="if(event.target==this) closeLoginModal()">
-        <div class="modal-content">
+        <div class="bg-white w-full max-w-sm p-8 rounded-[2rem] relative">
             <h2 class="text-2xl font-black mb-6">로그인</h2>
-            <input type="email" id="loginEmail" placeholder="이메일" class="w-full mb-4 p-4 bg-gray-100 rounded-xl outline-none">
-            <input type="password" id="loginPassword" placeholder="비밀번호" class="w-full mb-6 p-4 bg-gray-100 rounded-xl outline-none">
-            <button onclick="handleLogin()" class="w-full bg-black text-white py-4 rounded-xl font-bold">로그인</button>
-            <button onclick="closeLoginModal()" class="w-full mt-4 text-gray-400">닫기</button>
+            <input type="email" id="loginEmail" placeholder="이메일" class="w-full mb-4 p-4 bg-gray-50 rounded-xl outline-none border focus:border-pink-500">
+            <input type="password" id="loginPassword" placeholder="비밀번호" class="w-full mb-6 p-4 bg-gray-50 rounded-xl outline-none border focus:border-pink-500">
+            <button onclick="handleLogin()" class="w-full bg-black text-white py-4 rounded-xl font-bold">시작하기</button>
         </div>
     </div>
 
     <div id="signupModal" class="modal" onclick="if(event.target==this) closeSignupModal()">
-        <div class="modal-content">
-            <h2 class="text-2xl font-black mb-6">회원가입</h2>
-            <input type="text" id="signupName" placeholder="이름" class="w-full mb-4 p-4 bg-gray-100 rounded-xl outline-none">
-            <input type="email" id="signupEmail" placeholder="이메일" class="w-full mb-4 p-4 bg-gray-100 rounded-xl outline-none">
-            <input type="password" id="signupPassword" placeholder="비밀번호" class="w-full mb-6 p-4 bg-gray-100 rounded-xl outline-none">
-            <button onclick="handleSignup()" class="w-full bg-pink-500 text-white py-4 rounded-xl font-bold">가입하기</button>
-            <button onclick="closeSignupModal()" class="w-full mt-4 text-gray-400">닫기</button>
+        <div class="bg-white w-full max-w-sm p-8 rounded-[2rem] relative">
+            <h2 class="text-2xl font-black mb-6 text-pink-500">회원가입</h2>
+            <input type="text" id="signupName" placeholder="성함" class="w-full mb-4 p-4 bg-gray-50 rounded-xl outline-none border focus:border-pink-500">
+            <input type="email" id="signupEmail" placeholder="이메일 주소" class="w-full mb-4 p-4 bg-gray-50 rounded-xl outline-none border focus:border-pink-500">
+            <input type="password" id="signupPassword" placeholder="비밀번호 설정" class="w-full mb-6 p-4 bg-gray-50 rounded-xl outline-none border focus:border-pink-500">
+            <button onclick="handleSignup()" class="w-full bg-pink-500 text-white py-4 rounded-xl font-bold">가입하고 찜하기</button>
         </div>
     </div>
 
     <script>
+        // 1. 대량의 이미지 데이터 추가
         const galleryData = [
-            { id: 1, title: '아트 01', category: 'wallpaper', image: 'https://images.unsplash.com/photo-1514565131-fce0801e5785?w=600' },
-            { id: 2, title: '아트 02', category: 'illustration', image: 'https://images.unsplash.com/photo-1561070791-2526d30994b5?w=600' }
+            { id: 1, title: '추상화의 물결', image: 'https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=800' },
+            { id: 2, title: '보랏빛 우주', image: 'https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?w=800' },
+            { id: 3, title: '산맥의 고요', image: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800' },
+            { id: 4, title: '네온 시티', image: 'https://images.unsplash.com/photo-1519608487953-e999c86e7455?w=800' },
+            { id: 5, title: '숲속의 아침', image: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800' },
+            { id: 6, title: '바다의 윤슬', image: 'https://images.unsplash.com/photo-1505142468610-359e7d316be0?w=800' },
+            { id: 7, title: '사막의 밤', image: 'https://images.unsplash.com/photo-1473580044384-7ba9967e16a0?w=800' },
+            { id: 8, title: '눈 덮인 마을', image: 'https://images.unsplash.com/photo-1491002052546-bf38f186af56?w=800' },
+            { id: 9, title: '에메랄드 숲', image: 'https://images.unsplash.com/photo-1448375033059-5ac154ddc822?w=800' }
         ];
 
         let currentUser = JSON.parse(localStorage.getItem('currentUser'));
@@ -100,6 +110,14 @@
         function init() {
             updateUI();
             renderGallery();
+        }
+
+        // 2. 알림창(토스트) 표시 함수
+        function showToast(message) {
+            const toast = document.getElementById("toast");
+            toast.innerText = message;
+            toast.className = "show";
+            setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
         }
 
         function updateUI() {
@@ -115,25 +133,49 @@
         function renderGallery() {
             const grid = document.getElementById('galleryGrid');
             grid.innerHTML = galleryData.map(item => `
-                <div class="relative bg-white rounded-3xl overflow-hidden shadow-sm border border-gray-100">
+                <div class="relative bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all border border-gray-100">
                     <button onclick="toggleLike(${item.id})" class="like-btn">
                         ${likedItems.includes(item.id) ? '❤️' : '🤍'}
                     </button>
-                    <img src="${item.image}" class="w-full h-64 object-cover">
+                    <img src="${item.image}" class="w-full h-72 object-cover">
                     <div class="p-6">
                         <h3 class="font-bold text-lg">${item.title}</h3>
+                        <p class="text-xs text-gray-400 mt-1">Premium Digital Art</p>
                     </div>
                 </div>
             `).join('');
         }
 
         function toggleLike(id) {
-            if (!currentUser) return alert('로그인이 필요합니다!');
+            if (!currentUser) {
+                showToast('로그인이 필요합니다!');
+                setTimeout(openLoginModal, 1000);
+                return;
+            }
             const idx = likedItems.indexOf(id);
-            if (idx > -1) likedItems.splice(idx, 1);
-            else likedItems.push(id);
+            if (idx > -1) {
+                likedItems.splice(idx, 1);
+                showToast('찜 목록에서 삭제되었습니다.');
+            } else {
+                likedItems.push(id);
+                showToast('❤️ 찜 목록에 추가되었습니다!');
+            }
             localStorage.setItem('likes_' + currentUser.email, JSON.stringify(likedItems));
             renderGallery();
+        }
+
+        function showMyPage() {
+            document.getElementById('gallery').classList.add('hidden');
+            document.getElementById('hero-section').classList.add('hidden');
+            document.getElementById('mypage').classList.remove('hidden');
+            const likedList = document.getElementById('likedList');
+            const likedData = galleryData.filter(i => likedItems.includes(i.id));
+            if(likedData.length === 0) {
+                likedList.innerHTML = '<p class="col-span-full text-center text-gray-400 py-10">찜한 이미지가 없어요.</p>';
+            } else {
+                likedList.innerHTML = likedData.map(i => `<img src="${i.image}" class="rounded-2xl h-32 w-full object-cover shadow-md">`).join('');
+            }
+            window.scrollTo(0, 0);
         }
 
         function openLoginModal() { document.getElementById('loginModal').classList.add('active'); }
@@ -145,14 +187,14 @@
             const name = document.getElementById('signupName').value;
             const email = document.getElementById('signupEmail').value;
             const password = document.getElementById('signupPassword').value;
-            if(!name || !email || !password) return alert('입력해주세요!');
+            if(!name || !email || !password) { showToast('정보를 모두 입력해주세요!'); return; }
             
             const users = JSON.parse(localStorage.getItem('users') || '[]');
             users.push({name, email, password});
             localStorage.setItem('users', JSON.stringify(users));
-            alert('가입 완료! 로그인하세요.');
+            showToast('가입 성공! 로그인을 해주세요.');
             closeSignupModal();
-            openLoginModal();
+            setTimeout(openLoginModal, 500);
         }
 
         function handleLogin() {
@@ -162,20 +204,20 @@
             const user = users.find(u => u.email === email && u.password === password);
             if (user) {
                 localStorage.setItem('currentUser', JSON.stringify(user));
-                location.reload();
-            } else alert('정보 불일치');
+                showToast(user.name + '님 환영합니다!');
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showToast('이메일 또는 비밀번호가 틀렸습니다.');
+            }
         }
 
-        function showMyPage() {
-            document.getElementById('gallery').classList.add('hidden');
-            document.querySelector('section').classList.add('hidden');
-            document.getElementById('mypage').classList.remove('hidden');
-            const likedList = document.getElementById('likedList');
-            const likedData = galleryData.filter(i => likedItems.includes(i.id));
-            likedList.innerHTML = likedData.map(i => `<img src="${i.image}" class="rounded-xl h-24 w-full object-cover">`).join('');
+        function logout() { 
+            if(confirm('로그아웃 하시겠습니까?')) {
+                localStorage.removeItem('currentUser'); 
+                location.reload(); 
+            }
         }
-
-        function logout() { localStorage.removeItem('currentUser'); location.reload(); }
+        
         init();
     </script>
 </body>
