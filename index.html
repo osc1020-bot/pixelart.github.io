@@ -12,15 +12,16 @@
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // 🔥 승철님의 이미지(image_608da4.png)에서 확인된 실제 키값입니다.
-        const firebaseConfig = {
-            apiKey: "AIzaSyBlpa0dgKKd7rL1gF9ChjBYOAH-zKA340g",
-            authDomain: "mypixelart-56508.firebaseapp.com",
-            projectId: "mypixelart-56508",
-            storageBucket: "mypixelart-56508.firebasestorage.app",
-            messagingSenderId: "237654735317",
-            appId: "1:237654735317:web:3186c72a53b8f24f77255c",
-            measurementId: "G-5N47DRWVJG"
+        // 🔥 승철님의 이미지(image_608da4.png)를 바탕으로 수정한 정확한 값입니다.
+const firebaseConfig = {
+    apiKey: "AIzaSyBlpa0dgKKd7rL1gF9ChjBYOAH-zKA340g",
+    authDomain: "mypixelart-56508.firebaseapp.com",
+    projectId: "mypixelart-56508",
+    storageBucket: "mypixelart-56508.firebasestorage.app",
+    messagingSenderId: "237654735317",
+    appId: "1:237654735317:web:3186c72a53b8f24f77255c",
+    measurementId: "G-5N47DRWVJG"
+};
         };
 
         const app = initializeApp(firebaseConfig);
