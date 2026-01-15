@@ -3,16 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PixelArt - 최종 연동 버전</title>
+    <title>PixelArt - 클라우드 연동 성공</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
     
     <script type="module">
+        // Firebase 라이브러리 로드
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // 🔥 승철님의 Firebase 공식 설정값입니다. (오타 수정 완료)
+        // 🔥 승철님의 Firebase 공식 키값입니다. (오타 검수 완료)
         const firebaseConfig = {
             apiKey: "AIzaSyBlpa0dgKKd7rL1gF9ChjBYOAH-zKA340g",
             authDomain: "mypixelart-56508.firebaseapp.com",
@@ -23,51 +24,53 @@
             measurementId: "G-5N47DRWVJG"
         };
 
+        // 초기화
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // UI 제어 함수
+        // 버튼 클릭 함수들을 브라우저가 인식할 수 있게 등록
         window.openSignup = () => { document.getElementById('signupModal').style.display = 'flex'; };
         window.closeSignup = () => { document.getElementById('signupModal').style.display = 'none'; };
 
-        // 가입 로직 (비밀번호는 반드시 6자 이상이어야 에러가 안 납니다)
+        // 실제 가입 처리 함수
         window.handleJoin = async () => {
             const email = document.getElementById('s-email').value;
             const pw = document.getElementById('s-pw').value;
             const name = document.getElementById('s-name').value;
 
             if (pw.length < 6) {
-                alert("비밀번호를 6자 이상 입력해주세요!");
+                alert("비밀번호는 반드시 6글자 이상 입력해야 합니다!");
                 return;
             }
 
             try {
+                // 1. 서버에 계정 생성
                 const cred = await createUserWithEmailAndPassword(auth, email, pw);
-                // Firestore에 사용자 정보 저장
+                // 2. 데이터베이스에 사용자 이름 저장
                 await setDoc(doc(db, "users", cred.user.uid), {
                     name: name,
                     email: email,
                     joinedAt: new Date()
                 });
-                alert("🎉 " + name + "님, 가입이 성공적으로 완료되었습니다!");
+                alert("🎊 " + name + "님, 서버 가입에 성공했습니다!");
                 window.closeSignup();
             } catch (e) {
-                console.error(e);
-                alert("❌ 가입 실패: " + e.message);
+                console.error("Firebase Error:", e.code, e.message);
+                alert("❌ 에러 발생: " + e.message);
             }
         };
 
-        // 로그아웃 함수
+        // 로그아웃
         window.handleLogout = () => { signOut(auth).then(() => location.reload()); };
 
-        // 로그인 상태 감지
+        // 로그인 상태 체크하여 화면 변경
         onAuthStateChanged(auth, (user) => {
-            const btnArea = document.getElementById('auth-buttons');
+            const nav = document.getElementById('nav-menu');
             if (user) {
-                btnArea.innerHTML = `
-                    <span class="font-bold text-sm mr-2">${user.email}님</span>
-                    <button onclick="handleLogout()" class="text-xs text-red-500">로그아웃</button>
+                nav.innerHTML = `
+                    <span class="font-bold text-sm text-gray-600 mr-3">${user.email}님</span>
+                    <button onclick="handleLogout()" class="text-xs text-red-500 font-bold">로그아웃</button>
                 `;
             }
         });
@@ -81,34 +84,34 @@
 <body class="bg-gray-50">
 
     <nav class="bg-white border-b sticky top-0 z-50">
-        <div class="max-w-5xl mx-auto px-4 h-16 flex justify-between items-center">
+        <div class="max-w-4xl mx-auto px-4 h-16 flex justify-between items-center">
             <h1 class="text-2xl font-black text-pink-500">PixelArt</h1>
-            <div id="auth-buttons">
-                <button onclick="openSignup()" class="bg-pink-500 text-white px-6 py-2 rounded-full font-bold">가입하기</button>
+            <div id="nav-menu">
+                <button onclick="openSignup()" class="bg-pink-500 text-white px-6 py-2 rounded-full font-bold">서버 가입하기</button>
             </div>
         </div>
     </nav>
 
-    <main class="max-w-5xl mx-auto p-8">
-        <div class="bg-white rounded-3xl p-10 shadow-lg text-center">
-            <h2 class="text-3xl font-black mb-4">나만의 디지털 갤러리</h2>
-            <p class="text-gray-500 mb-10">클라우드 연동으로 어디서나 내 작품을 확인하세요.</p>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <img src="https://images.unsplash.com/photo-1550684848-fac1c5b4e853?w=600" class="rounded-2xl shadow-md">
-                <img src="https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=600" class="rounded-2xl shadow-md">
+    <main class="max-w-4xl mx-auto p-8">
+        <div class="bg-white rounded-[40px] p-12 shadow-2xl text-center">
+            <h2 class="text-4xl font-black mb-6">내 디지털 갤러리</h2>
+            <p class="text-gray-400 mb-12 text-lg">이제 전 세계 어디서든 내 데이터를 확인하세요.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="rounded-3xl overflow-hidden shadow-lg border-8 border-white"><img src="https://images.unsplash.com/photo-1550684848-fac1c5b4e853?w=800" class="w-full h-full object-cover"></div>
+                <div class="rounded-3xl overflow-hidden shadow-lg border-8 border-white"><img src="https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=800" class="w-full h-full object-cover"></div>
             </div>
         </div>
     </main>
 
     <div id="signupModal" class="modal">
-        <div class="bg-white p-8 rounded-3xl w-full max-w-sm mx-4">
-            <h2 class="text-2xl font-bold mb-6 text-center">반가워요!</h2>
-            <input type="text" id="s-name" placeholder="이름" class="w-full border p-4 rounded-xl mb-3 outline-none">
-            <input type="email" id="s-email" placeholder="이메일 주소" class="w-full border p-4 rounded-xl mb-3 outline-none">
-            <input type="password" id="s-pw" placeholder="비밀번호 (6자 이상)" class="w-full border p-4 rounded-xl mb-6 outline-none">
-            <div class="flex gap-2">
-                <button onclick="closeSignup()" class="flex-1 bg-gray-100 py-4 rounded-xl font-bold">닫기</button>
-                <button onclick="handleJoin()" class="flex-2 bg-pink-500 text-white py-4 px-8 rounded-xl font-bold">서버 가입</button>
+        <div class="bg-white p-10 rounded-[30px] w-full max-w-sm mx-4">
+            <h2 class="text-3xl font-bold mb-8 text-center text-pink-500">반가워요!</h2>
+            <input type="text" id="s-name" placeholder="닉네임" class="w-full border-2 p-4 rounded-2xl mb-4 outline-none focus:border-pink-500">
+            <input type="email" id="s-email" placeholder="이메일 (abc@test.com)" class="w-full border-2 p-4 rounded-2xl mb-4 outline-none focus:border-pink-500">
+            <input type="password" id="s-pw" placeholder="비밀번호 (6자 이상)" class="w-full border-2 p-4 rounded-2xl mb-8 outline-none focus:border-pink-500">
+            <div class="flex gap-3">
+                <button onclick="closeSignup()" class="flex-1 bg-gray-100 py-4 rounded-2xl font-bold">취소</button>
+                <button onclick="handleJoin()" class="flex-2 bg-pink-500 text-white py-4 px-8 rounded-2xl font-bold shadow-lg shadow-pink-200">가입 시작</button>
             </div>
         </div>
     </div>
