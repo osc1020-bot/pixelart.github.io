@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PixelArt - 승철님 서버 연동 완료</title>
+    <title>PixelArt - 서버 연동 완료</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
     
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // 🔥 이미지(image_608da4.png)에서 확인된 승철님의 실제 설정값입니다
+        // 🔥 승철님의 이미지(image_608da4.png)에서 확인된 실제 키값입니다.
         const firebaseConfig = {
             apiKey: "AIzaSyBlpa0dgKKd7rL1gF9ChjBYOAH-zKA340g",
             authDomain: "mypixelart-56508.firebaseapp.com",
@@ -27,133 +27,89 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // 전역에서 쓸 수 있게 함수 등록
-        window.fbAuth = auth;
-        window.fbDb = db;
-        window.methods = { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, doc, setDoc, getDoc, updateDoc, onAuthStateChanged };
-    </script>
+        // 에러 해결 포인트: 모든 함수를 window 객체에 연결해서 버튼이 인식하게 만듭니다.
+        window.openSignupModal = () => document.getElementById('signupModal').style.display = 'flex';
+        window.closeSignupModal = () => document.getElementById('signupModal').style.display = 'none';
+        window.openLoginModal = () => document.getElementById('loginModal').style.display = 'flex';
+        window.closeLoginModal = () => document.getElementById('loginModal').style.display = 'none';
 
-    <style>
-        * { font-family: 'Noto Sans KR', sans-serif; }
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center; }
-        .modal.active { display: flex; }
-        #toast { visibility: hidden; position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #333; color: #fff; padding: 12px 24px; border-radius: 50px; z-index: 2000; }
-        #toast.show { visibility: visible; animation: fade 0.5s; }
-        @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
-    </style>
-</head>
-<body class="bg-gray-50">
-
-    <div id="toast">메시지</div>
-
-    <nav class="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b">
-        <div class="max-w-6xl mx-auto px-4 h-16 flex justify-between items-center">
-            <h1 class="text-2xl font-black text-pink-500 cursor-pointer" onclick="location.reload()">PixelArt</h1>
-            <div id="nav-btns" class="flex gap-4 items-center">
-                <button onclick="toggleModal('loginModal')" class="font-bold text-sm">로그인</button>
-                <button onclick="toggleModal('signupModal')" class="bg-pink-500 text-white px-4 py-2 rounded-full font-bold text-sm">가입</button>
-            </div>
-        </div>
-    </nav>
-
-    <main class="max-w-6xl mx-auto p-4 pt-10">
-        <h2 class="text-3xl font-black mb-8">오늘의 아트 컬렉션</h2>
-        <div id="gallery" class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            </div>
-    </main>
-
-    <div id="signupModal" class="modal" onclick="if(event.target==this) toggleModal('signupModal')">
-        <div class="bg-white p-8 rounded-3xl w-full max-w-sm">
-            <h2 class="text-2xl font-bold mb-6">회원가입</h2>
-            <input type="text" id="s-name" placeholder="이름" class="w-full border p-3 rounded-xl mb-3">
-            <input type="email" id="s-email" placeholder="이메일" class="w-full border p-3 rounded-xl mb-3">
-            <input type="password" id="s-pw" placeholder="비밀번호 (6자 이상)" class="w-full border p-3 rounded-xl mb-6">
-            <button onclick="handleJoin()" class="w-full bg-pink-500 text-white py-4 rounded-xl font-bold">서버에 가입하기</button>
-        </div>
-    </div>
-
-    <div id="loginModal" class="modal" onclick="if(event.target==this) toggleModal('loginModal')">
-        <div class="bg-white p-8 rounded-3xl w-full max-w-sm">
-            <h2 class="text-2xl font-bold mb-6">로그인</h2>
-            <input type="email" id="l-email" placeholder="이메일" class="w-full border p-3 rounded-xl mb-3">
-            <input type="password" id="l-pw" placeholder="비밀번호" class="w-full border p-3 rounded-xl mb-6">
-            <button onclick="handleLogin()" class="w-full bg-black text-white py-4 rounded-xl font-bold">시작하기</button>
-        </div>
-    </div>
-
-    <script type="module">
-        const data = [
-            { id: 1, title: '디지털 핑크', img: 'https://images.unsplash.com/photo-1550684848-fac1c5b4e853?w=500' },
-            { id: 2, title: '추상화의 밤', img: 'https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=500' },
-            { id: 3, title: '네온 시티', img: 'https://images.unsplash.com/photo-1519608487953-e999c86e7455?w=500' }
-        ];
-
-        // 1. 초기 실행 및 상태 감지
-        window.onload = () => {
-            render();
-            window.methods.onAuthStateChanged(window.fbAuth, (user) => {
-                if(user) {
-                    document.getElementById('nav-btns').innerHTML = `
-                        <span class="text-sm font-bold text-gray-500">${user.email}님</span>
-                        <button onclick="handleLogout()" class="text-xs text-red-500">로그아웃</button>
-                    `;
-                }
-            });
-        };
-
-        function render() {
-            const gallery = document.getElementById('gallery');
-            gallery.innerHTML = data.map(i => `
-                <div class="bg-white rounded-3xl overflow-hidden shadow-md">
-                    <img src="${i.img}" class="w-full h-64 object-cover">
-                    <div class="p-6 flex justify-between items-center">
-                        <span class="font-bold text-lg">${i.title}</span>
-                        <button onclick="alert('찜하기는 가입 후 가능합니다!')" class="text-2xl">❤️</button>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        // 2. 가입 로직
-        window.handleJoin = async () => {
+        // 회원가입 로직
+        window.handleSignup = async () => {
             const email = document.getElementById('s-email').value;
             const pw = document.getElementById('s-pw').value;
-            const name = document.getElementById('s-name').value;
-
             try {
-                const cred = await window.methods.createUserWithEmailAndPassword(window.fbAuth, email, pw);
-                await window.methods.setDoc(window.methods.doc(window.fbDb, "users", cred.user.uid), {
-                    name: name, email: email, joinedAt: new Date()
-                });
-                toast("✅ 서버 가입 성공! 이제 로그인하세요.");
-                toggleModal('signupModal');
-            } catch (e) { toast("❌ 실패: " + e.message); }
+                const res = await createUserWithEmailAndPassword(auth, email, pw);
+                await setDoc(doc(db, "users", res.user.uid), { email: email, createdAt: new Date() });
+                alert("🎉 가입 성공! 이제 로그인해 보세요.");
+                window.closeSignupModal();
+            } catch (e) { alert("에러: " + e.message); }
         };
 
-        // 3. 로그인 로직
+        // 로그인 로직
         window.handleLogin = async () => {
             const email = document.getElementById('l-email').value;
             const pw = document.getElementById('l-pw').value;
             try {
-                await window.methods.signInWithEmailAndPassword(window.fbAuth, email, pw);
-                toast("👋 반갑습니다!");
-                toggleModal('loginModal');
-                setTimeout(() => location.reload(), 1000);
-            } catch (e) { toast("❌ 로그인 실패"); }
+                await signInWithEmailAndPassword(auth, email, pw);
+                alert("반갑습니다!");
+                location.reload();
+            } catch (e) { alert("로그인 실패: 정보가 틀립니다."); }
         };
 
-        window.handleLogout = () => {
-            window.methods.signOut(window.fbAuth);
-            location.reload();
-        };
+        // 로그아웃
+        window.handleLogout = () => { signOut(auth).then(() => location.reload()); };
 
-        // UI 유틸리티
-        window.toggleModal = (id) => document.getElementById(id).classList.toggle('active');
-        function toast(m) {
-            const t = document.getElementById('toast');
-            t.innerText = m; t.classList.add('show');
-            setTimeout(() => t.classList.remove('show'), 3000);
-        }
+        // 로그인 상태 감지 (네비게이션 변경)
+        onAuthStateChanged(auth, (user) => {
+            const nav = document.getElementById('nav-right');
+            if (user) {
+                nav.innerHTML = `<span class="text-sm font-bold mr-4">${user.email}님</span><button onclick="handleLogout()" class="text-xs text-gray-400">로그아웃</button>`;
+            }
+        });
     </script>
+
+    <style>
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
+    </style>
+</head>
+<body class="bg-gray-50">
+
+    <nav class="bg-white border-b sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 h-16 flex justify-between items-center">
+            <h1 class="text-2xl font-black text-pink-500">PixelArt</h1>
+            <div id="nav-right">
+                <button onclick="openLoginModal()" class="text-sm font-bold px-4">로그인</button>
+                <button onclick="openSignupModal()" class="bg-pink-500 text-white px-4 py-2 rounded-full text-sm font-bold">회원가입</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-6xl mx-auto p-10 text-center">
+        <h2 class="text-4xl font-black mb-4">내 손안의 디지털 아트</h2>
+        <p class="text-gray-500 mb-10">가입하고 나만의 찜 목록을 만드세요.</p>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <img src="https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=800" class="rounded-3xl shadow-lg">
+            <img src="https://images.unsplash.com/photo-1550684848-fac1c5b4e853?w=800" class="rounded-3xl shadow-lg">
+        </div>
+    </main>
+
+    <div id="signupModal" class="modal" onclick="if(event.target==this) closeSignupModal()">
+        <div class="bg-white p-8 rounded-3xl w-full max-w-sm">
+            <h2 class="text-2xl font-bold mb-6">회원가입</h2>
+            <input type="email" id="s-email" placeholder="이메일 주소" class="w-full border p-3 rounded-xl mb-3 outline-none focus:border-pink-500">
+            <input type="password" id="s-pw" placeholder="비밀번호 (6자 이상)" class="w-full border p-3 rounded-xl mb-6 outline-none focus:border-pink-500">
+            <button onclick="handleSignup()" class="w-full bg-pink-500 text-white py-4 rounded-xl font-bold hover:bg-pink-600">서버에 저장하기</button>
+        </div>
+    </div>
+
+    <div id="loginModal" class="modal" onclick="if(event.target==this) closeLoginModal()">
+        <div class="bg-white p-8 rounded-3xl w-full max-w-sm">
+            <h2 class="text-2xl font-bold mb-6">로그인</h2>
+            <input type="email" id="l-email" placeholder="이메일" class="w-full border p-3 rounded-xl mb-3 outline-none">
+            <input type="password" id="l-pw" placeholder="비밀번호" class="w-full border p-3 rounded-xl mb-6 outline-none">
+            <button onclick="handleLogin()" class="w-full bg-black text-white py-4 rounded-xl font-bold">접속하기</button>
+        </div>
+    </div>
+
 </body>
 </html>
