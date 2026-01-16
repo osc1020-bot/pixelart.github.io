@@ -3,132 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PixelArt - 승철님 서버 연결 성공</title>
+    <title>PixelArt - 클라우드 연동 성공</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
-    
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, createUserWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        // 🔥 승철님의 이미지에서 확인된 실제 설정값입니다.
+        // 🔥 승철님의 프로젝트 고유 설정값
         const firebaseConfig = {
             apiKey: "AIzaSyBlpa0dgKKd7rL1gF9ChjBYOAH-zKA340g",
             authDomain: "mypixelart-56508.firebaseapp.com",
             projectId: "mypixelart-56508",
-            storageBucket: "mypixelart-56508.firebasestorage.app",
-            messagingSenderId: "237654735317",
-            appId: "1:237654735317:web:3186c72a53b8f24f77255c",
-            measurementId: "G-5N47DRWVJG"
+            appId: "1:237654735317:web:3186c72a53b8f24f77255c"
         };
 
-        // Firebase 초기화
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
-        const db = getFirestore(app);
 
-        // 버튼 작동을 위해 전역 함수로 등록
-        window.openSignup = () => { document.getElementById('signupModal').style.display = 'flex'; };
-        window.closeSignup = () => { document.getElementById('signupModal').style.display = 'none'; };
-
-        // 회원가입 처리 (Identity Toolkit API가 켜져 있어야 작동합니다)
+        // 가입 함수 (전역 등록)
         window.handleJoin = async () => {
             const email = document.getElementById('s-email').value;
             const pw = document.getElementById('s-pw').value;
-            const name = document.getElementById('s-name').value;
 
             if (pw.length < 6) {
-                alert("비밀번호는 6자 이상이어야 합니다!");
+                alert("비밀번호는 반드시 6자 이상이어야 합니다!");
                 return;
             }
 
             try {
-                // 1. 구글 서버에 사용자 생성
-                const cred = await createUserWithEmailAndPassword(auth, email, pw);
-                
-                // 2. Firestore 데이터베이스에 이름 저장
-                await setDoc(doc(db, "users", cred.user.uid), {
-                    name: name,
-                    email: email,
-                    createdAt: new Date()
-                });
-
-                alert("🎉 " + name + "님, 서버 연결 및 가입에 성공했습니다!");
-                window.closeSignup();
-            } catch (error) {
-                console.error(error);
-                // 엔진이 안 켜졌을 때 에러 메시지를 띄워줍니다.
-                alert("에러 발생: " + error.message);
-            }
-        };
-
-        // 로그아웃 처리
-        window.handleLogout = () => {
-            signOut(auth).then(() => {
-                alert("로그아웃 되었습니다.");
+                await createUserWithEmailAndPassword(auth, email, pw);
+                alert("🎉 대성공! 이제 구글 서버에 승철님의 계정이 생성되었습니다.");
                 location.reload();
-            });
+            } catch (e) {
+                console.error(e);
+                // 엔진 미활성화 시 에러 처리
+                alert("아직 서버 엔진이 꺼져있습니다.\n에러: " + e.message);
+            }
         };
 
-        // 로그인 상태 실시간 감지
         onAuthStateChanged(auth, (user) => {
-            const authArea = document.getElementById('auth-area');
-            if (user) {
-                authArea.innerHTML = `
-                    <span class="text-sm font-bold mr-3 text-gray-700">${user.email}님</span>
-                    <button onclick="handleLogout()" class="text-xs text-red-500 font-bold underline">로그아웃</button>
-                `;
-            }
+            if (user) document.getElementById('status').innerText = user.email + "님 로그인 중";
         });
     </script>
-
-    <style>
-        * { font-family: 'Noto Sans KR', sans-serif; }
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 1000; align-items: center; justify-content: center; }
-    </style>
 </head>
-<body class="bg-gray-50">
-
-    <nav class="bg-white border-b sticky top-0 z-50">
-        <div class="max-w-4xl mx-auto px-4 h-16 flex justify-between items-center">
-            <h1 class="text-2xl font-black text-pink-500 italic">PixelArt</h1>
-            <div id="auth-area">
-                <button onclick="openSignup()" class="bg-pink-500 text-white px-6 py-2 rounded-full font-bold shadow-lg hover:bg-pink-600 transition">가입하기</button>
-            </div>
-        </div>
-    </nav>
-
-    <main class="max-w-4xl mx-auto p-8">
-        <div class="bg-white rounded-[3rem] p-12 shadow-2xl text-center border border-gray-100">
-            <h2 class="text-4xl font-black mb-6 text-gray-800">서버 연동 완료 버전 🚀</h2>
-            <p class="text-gray-400 mb-12 text-lg">이제 승철님의 데이터는 구글 클라우드 서버에 안전하게 저장됩니다.</p>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div class="rounded-3xl overflow-hidden shadow-xl aspect-video bg-gray-200">
-                    <img src="https://images.unsplash.com/photo-1550684848-fac1c5b4e853?w=800" class="w-full h-full object-cover">
-                </div>
-                <div class="rounded-3xl overflow-hidden shadow-xl aspect-video bg-gray-200">
-                    <img src="https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=800" class="w-full h-full object-cover">
-                </div>
-            </div>
-        </div>
-    </main>
-
-    <div id="signupModal" class="modal">
-        <div class="bg-white p-10 rounded-[2.5rem] w-full max-w-sm mx-4 shadow-2xl">
-            <h2 class="text-3xl font-bold mb-8 text-center">반가워요!</h2>
-            <div class="space-y-4">
-                <input type="text" id="s-name" placeholder="닉네임" class="w-full border-2 border-gray-100 p-4 rounded-2xl outline-none focus:border-pink-400 transition">
-                <input type="email" id="s-email" placeholder="이메일 주소" class="w-full border-2 border-gray-100 p-4 rounded-2xl outline-none focus:border-pink-400 transition">
-                <input type="password" id="s-pw" placeholder="비밀번호 (6자 이상)" class="w-full border-2 border-gray-100 p-4 rounded-2xl outline-none focus:border-pink-400 transition">
-            </div>
-            <div class="flex gap-3 mt-8">
-                <button onclick="closeSignup()" class="flex-1 bg-gray-100 py-4 rounded-2xl font-bold text-gray-500 hover:bg-gray-200 transition">취소</button>
-                <button onclick="handleJoin()" class="flex-[2] bg-pink-500 text-white py-4 rounded-2xl font-bold shadow-lg hover:bg-pink-600 transition">서버에 저장</button>
-            </div>
+<body class="bg-gray-50 flex items-center justify-center h-screen font-sans">
+    <div class="bg-white p-12 rounded-[3rem] shadow-2xl w-full max-w-md text-center border border-gray-100">
+        <h1 class="text-4xl font-black text-pink-500 mb-8 italic">PixelArt</h1>
+        <p id="status" class="text-gray-400 mb-8 font-medium text-lg">서버 가입 테스트를 진행하세요</p>
+        
+        <div class="space-y-4">
+            <input type="email" id="s-email" placeholder="이메일 주소" class="w-full border-2 p-4 rounded-2xl outline-none focus:border-pink-500 transition-all bg-gray-50">
+            <input type="password" id="s-pw" placeholder="비밀번호 (6자 이상)" class="w-full border-2 p-4 rounded-2xl outline-none focus:border-pink-500 transition-all bg-gray-50">
+            <button onclick="handleJoin()" class="w-full bg-pink-500 text-white py-5 rounded-2xl font-bold text-xl shadow-lg shadow-pink-200 hover:scale-[1.02] active:scale-95 transition-all">서버에 저장</button>
         </div>
     </div>
-
 </body>
 </html>
