@@ -2,60 +2,82 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PixelArt - 클라우드 연동 성공</title>
+    <title>GOLD RUSH - 대표님 전용 시스템</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getAuth } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        // 🔥 승철님의 프로젝트 고유 설정값
+        // 🔥 승철님의 실제 프로젝트 정보 (image_f92000.png 기준)
         const firebaseConfig = {
-            apiKey: "AIzaSyBUBQPqPpHGts_iFsBiiG2MVyYl6AEGVJk",
-            authDomain: "mypixelart-56508.firebaseapp.com",
-            projectId: "mypixelart-56508",
+            apiKey: "AIzaSyBlpa0dgKKd7rL1gF9ChjBYOAH-zKA340g", // 마스터 키
+            authDomain: "dazzling-scheme-437802-a9.firebaseapp.com",
+            projectId: "dazzling-scheme-437802-a9",
             appId: "1:237654735317:web:3186c72a53b8f24f77255c"
         };
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
-
-        // 가입 함수 (전역 등록)
-        window.handleJoin = async () => {
-            const email = document.getElementById('s-email').value;
-            const pw = document.getElementById('s-pw').value;
-
-            if (pw.length < 6) {
-                alert("비밀번호는 반드시 6자 이상이어야 합니다!");
-                return;
-            }
-
-            try {
-                await createUserWithEmailAndPassword(auth, email, pw);
-                alert("🎉 대성공! 이제 구글 서버에 승철님의 계정이 생성되었습니다.");
-                location.reload();
-            } catch (e) {
-                console.error(e);
-                // 엔진 미활성화 시 에러 처리
-                alert("아직 서버 엔진이 꺼져있습니다.\n에러: " + e.message);
-            }
-        };
-
-        onAuthStateChanged(auth, (user) => {
-            if (user) document.getElementById('status').innerText = user.email + "님 로그인 중";
-        });
     </script>
 </head>
-<body class="bg-gray-50 flex items-center justify-center h-screen font-sans">
-    <div class="bg-white p-12 rounded-[3rem] shadow-2xl w-full max-w-md text-center border border-gray-100">
-        <h1 class="text-4xl font-black text-pink-500 mb-8 italic">PixelArt</h1>
-        <p id="status" class="text-gray-400 mb-8 font-medium text-lg">서버 가입 테스트를 진행하세요</p>
-        
-        <div class="space-y-4">
-            <input type="email" id="s-email" placeholder="이메일 주소" class="w-full border-2 p-4 rounded-2xl outline-none focus:border-pink-500 transition-all bg-gray-50">
-            <input type="password" id="s-pw" placeholder="비밀번호 (6자 이상)" class="w-full border-2 p-4 rounded-2xl outline-none focus:border-pink-500 transition-all bg-gray-50">
-            <button onclick="handleJoin()" class="w-full bg-pink-500 text-white py-5 rounded-2xl font-bold text-xl shadow-lg shadow-pink-200 hover:scale-[1.02] active:scale-95 transition-all">서버에 저장</button>
+<body class="bg-slate-900 text-slate-100">
+    <nav class="border-b border-slate-800 p-6 flex justify-between items-center bg-slate-900/80 backdrop-blur-md sticky top-0 z-50">
+        <h1 class="text-2xl font-black tracking-tighter text-yellow-500 italic">GOLD RUSH <span class="text-white text-xs font-light not-italic ml-2">PREMIUM</span></h1>
+        <div class="flex items-center gap-4">
+            <span class="bg-yellow-500/10 text-yellow-500 px-4 py-1.5 rounded-full text-xs font-bold border border-yellow-500/20">대표님 접속 중</span>
         </div>
-    </div>
+    </nav>
+
+    <main class="p-8 max-w-7xl mx-auto">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+            <div class="bg-slate-800 p-8 rounded-[2.5rem] border border-slate-700 shadow-2xl transition-transform hover:scale-105">
+                <p class="text-slate-400 text-sm font-medium">오늘의 S급 추천</p>
+                <h3 class="text-4xl font-black text-yellow-500 mt-3">12건</h3>
+            </div>
+            <div class="bg-slate-800 p-8 rounded-[2.5rem] border border-slate-700 shadow-2xl transition-transform hover:scale-105">
+                <p class="text-slate-400 text-sm font-medium">분석 완료 데이터</p>
+                <h3 class="text-4xl font-black text-blue-500 mt-3">1,248건</h3>
+            </div>
+            <div class="bg-slate-800 p-8 rounded-[2.5rem] border border-slate-700 shadow-2xl transition-transform hover:scale-105">
+                <p class="text-slate-400 text-sm font-medium">예상 수익금 총액</p>
+                <h3 class="text-4xl font-black text-green-500 mt-3">₩4.2억</h3>
+            </div>
+        </div>
+
+        <div class="bg-slate-800 rounded-[3rem] border border-slate-700 overflow-hidden shadow-2xl">
+            <div class="p-8 border-b border-slate-700 flex justify-between items-center bg-slate-800/50">
+                <h2 class="text-2xl font-bold">실시간 경매 분석 리스트</h2>
+                <div class="text-slate-400 text-sm italic">Last Update: Just Now</div>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead class="bg-slate-900/50 text-slate-400 text-sm uppercase tracking-wider">
+                        <tr>
+                            <th class="p-6 font-bold">사건번호</th>
+                            <th class="p-6 font-bold">소재지/용도</th>
+                            <th class="p-6 font-bold">최저가</th>
+                            <th class="p-6 font-bold">AI 분석 요약</th>
+                            <th class="p-6 font-bold text-right">수익률(예상)</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-700/50">
+                        <tr class="hover:bg-slate-700/30 transition-colors group">
+                            <td class="p-6 font-mono text-blue-400 font-bold text-lg">2024타경5582</td>
+                            <td class="p-6">
+                                <div class="font-bold text-slate-200 text-lg">성남시 분당구 아파트</div>
+                                <div class="text-sm text-slate-500 mt-1">대단지 역세권, 유찰 2회</div>
+                            </td>
+                            <td class="p-6 font-bold text-slate-300">840,000,000</td>
+                            <td class="p-6">
+                                <span class="bg-green-500/10 text-green-500 px-3 py-1 rounded-lg text-xs font-bold border border-green-500/20">명도 용이</span>
+                                <span class="bg-blue-500/10 text-blue-500 px-3 py-1 rounded-lg text-xs font-bold border border-blue-500/20 ml-2">권리 깨끗</span>
+                            </td>
+                            <td class="p-6 text-right font-black text-2xl text-red-500 group-hover:scale-110 transition-transform">24.8%</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
 </body>
 </html>
